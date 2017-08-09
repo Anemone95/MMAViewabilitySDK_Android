@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="cn.com.mma.mobile.tracking.demo.MainActivity">
+
+    <TextView
+        android:id="@+id/ad_url"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="监测链接:"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="5dp"
+        android:onClick="doClick"
+        android:text="@string/click"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="5dp"
+        android:onClick="doExpose"
+        android:text="@string/expose"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="5dp"
+        android:onClick="doViewAbilityExpose"
+        android:text="@string/viewability_expose"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="5dp"
+        android:onClick="doViewAbilityJSExpose"
+        android:text="@string/viewability_jsexpose"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:scrollbars="vertical"
+        android:visibility="visible">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/topstub"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_marginTop="50dp"
+                android:gravity="center"
+                android:textColor="#ffffff"
+                android:textSize="22sp"
+                android:visibility="visible"/>
+
+            <TextView
+                android:id="@+id/adview"
+                android:layout_width="200dp"
+                android:layout_height="100dp"
+                android:layout_below="@+id/topstub"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="50dp"
+                android:background="#ff0000"
+                android:gravity="center"
+                android:text="@string/adView"
+                android:textColor="#ffffff"
+                android:textSize="22sp"/>
+
+            <TextView
+                android:id="@+id/bottomsub"
+                android:layout_width="match_parent"
+                android:layout_height="800dp"
+                android:layout_below="@+id/adview"
+                android:layout_marginTop="50dp"
+                android:gravity="center"
+                android:textColor="#ffffff"
+                android:textSize="22sp"
+                android:visibility="visible"/>
+        </RelativeLayout>
+    </ScrollView>
+</LinearLayout>
