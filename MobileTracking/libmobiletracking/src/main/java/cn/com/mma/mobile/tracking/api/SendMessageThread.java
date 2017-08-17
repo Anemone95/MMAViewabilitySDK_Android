@@ -87,9 +87,12 @@ public class SendMessageThread extends Thread {
 
                             if (statueCode == 200 || statueCode == 301 || statueCode == 302) {
 
-                                //TODO 记录发送成功[for TEST]
-//                                Intent intent = new Intent(Countly.ACTION_STATS_SUCCESSED);
-//                                context.sendBroadcast(intent);
+                                //[LOCALTEST] 测试计数:记录发送成功
+                                if (Countly.LOCAL_TEST) {
+                                    Intent intent = new Intent(Countly.ACTION_STATS_SUCCESSED);
+                                    context.sendBroadcast(intent);
+                                }
+
 
                                 handleSuccessResult(spName, key);
                                 if (statueCode == 301 || statueCode == 302) {

@@ -12,9 +12,8 @@ import cn.com.mma.mobile.tracking.util.SharedPreferencedUtil;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityEventListener;
 
 /**
- * API入口类
- * <p>
- * AdmasterViewAbilitySDK 1.0.0
+ * MMAChinaSDK Android API 入口类
+ *
  */
 public class Countly {
 
@@ -36,9 +35,12 @@ public class Countly {
     private static final String EVENT_VIEWABILITY_EXPOSE = "onAdViewExpose";
     private static final String EVENT_VIEWABILITY_VIDEOEXPOSE = "onVideoExpose";
 
-//    public static String ACTION_STATS_EXPOSE = "com.admaster.broadcast.STATS_EXPOSE";
-//    public static String ACTION_STATS_VIEWABILITY = "com.admaster.broadcast.STATS_VIEWABILITY";
-//    public static String ACTION_STATS_SUCCESSED = "com.admaster.broadcast.STATS_SUCCESSED";
+    //[本地测试]控制广播的开关
+    public static boolean LOCAL_TEST = true;
+
+    public static String ACTION_STATS_EXPOSE = "ACTION_STATS_EXPOSE";
+    public static String ACTION_STATS_VIEWABILITY = "ACTION.STATS_VIEWABILITY";
+    public static String ACTION_STATS_SUCCESSED = "ACTION.STATS_SUCCESSED";
 
     private static Countly mInstance = null;
 
@@ -56,14 +58,18 @@ public class Countly {
 
 
     /**
-     * 设置是否打开log输出
+     * 调试模式,打印Log日志,默认关闭
+     * @param isPrintOut 是否开启log输出
      */
     public void setLogState(boolean isPrintOut) {
         Logger.DEBUG_LOG = isPrintOut;
     }
 
+
     /**
-     * 初始化SDK
+     * SDK初始化,需要手续
+     * @param context 上下文
+     * @param configURL 配置文件在线更新地址
      */
     public void init(Context context, String configURL) {
         if (context == null) {
@@ -98,8 +104,117 @@ public class Countly {
 
 
     /**
-     * 启动定时器
+     * 普通点击事件监测接口
+     * @param adURL 监测链接
      */
+    public  void onClick(String adURL) {
+
+        triggerEvent(EVENT_CLICK, adURL, null);
+    }
+
+    /**
+     * 普通曝光事件监测接口
+     * @param adURL 监测链接
+     */
+    public  void onExpose(String adURL) {
+
+        triggerEvent(EVENT_EXPOSE, adURL, null);
+    }
+
+    /**
+     * 可视化曝光事件监测接口
+     * @param adURL 监测链接
+     * @param adView 监测广告视图对象
+     */
+    public  void onExpose(String adURL, View adView) {
+
+        triggerEvent(EVENT_VIEWABILITY_EXPOSE, adURL, adView);
+    }
+
+    /**
+     * 可视化视频曝光事件监测接口
+     *
+     * @param adURL     监测链接
+     * @param videoView 监测广告视频对象
+     */
+    public void onVideoExpose(String adURL, View videoView) {
+
+        triggerEvent(EVENT_VIEWABILITY_VIDEOEXPOSE, adURL, videoView);
+    }
+
+    /**
+     * 可视化曝光JS监测接口
+     * @param adURL 监测链接
+     * @param adView 监测广告视图对象
+     */
+    public void onJSExpose(String adURL, View adView) {
+        viewAbilityHandler.onJSExpose(adURL, adView, false);
+    }
+
+    /**
+     * 可视化视频曝光JS监测接口
+     * @param adURL 监测链接
+     * @param adView 监测广告视图对象
+     */
+    public void onJSVideoExpose(String adURL, View adView) {
+        viewAbilityHandler.onJSExpose(adURL, adView, true);
+    }
+
+    /**
+     * 释放SDK接口,在程序完全退出前调用
+     */
+    public  void terminateSDK() {
+        try {
+            if (normalTimer != null) {
+                normalTimer.cancel();
+                normalTimer.purge();
+            }
+            if (failedTimer == null) {
+                failedTimer.cancel();
+                failedTimer.purge();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            normalTimer = null;
+            failedTimer = null;
+            sendNormalMessageThread = null;
+            sendFailedMessageThread = null;
+            mUrildBuilder = null;
+
+            if (viewAbilityHandler != null) viewAbilityHandler = null;
+
+        }
+    }
+
+
+
+    private  void triggerEvent(String eventName, String adURL, View adView) {
+
+        if (sIsInitialized == false || mUrildBuilder == null) {
+            Logger.e("The static method " + eventName + "(...) should be called before calling Countly.init(...)");
+            return;
+        }
+
+        switch (eventName) {
+            case EVENT_CLICK:
+                viewAbilityHandler.onClick(adURL);
+                break;
+            case EVENT_EXPOSE:
+                viewAbilityHandler.onExpose(adURL);
+                break;
+            case EVENT_VIEWABILITY_EXPOSE:
+                viewAbilityHandler.onExpose(adURL, adView);
+                break;
+            case EVENT_VIEWABILITY_VIDEOEXPOSE:
+                viewAbilityHandler.onVideoExpose(adURL, adView);
+                break;
+
+        }
+    }
+
+
+
     private  void startTask() {
         try {
             normalTimer.schedule(new TimerTask() {
@@ -146,93 +261,11 @@ public class Countly {
         }
     }
 
-    /**
-     * 公有方法，点击或爆光
-     */
-    public  void onClick(String adURL) {
-
-        triggerEvent(EVENT_CLICK, adURL, null);
-    }
-
-    public  void onExpose(String adURL) {
-
-        triggerEvent(EVENT_EXPOSE, adURL, null);
-    }
-
-
-    public  void onExpose(String adURL, View adView) {
-
-        triggerEvent(EVENT_VIEWABILITY_EXPOSE, adURL, adView);
-    }
-
-    public  void onVideoExpose(String adURL, View videoView) {
-
-        triggerEvent(EVENT_VIEWABILITY_VIDEOEXPOSE, adURL, videoView);
-    }
-
-
-    private  void triggerEvent(String eventName, String adURL, View adView) {
-
-        if (sIsInitialized == false || mUrildBuilder == null) {
-            Logger.e("The static method " + eventName + "(...) should be called before calling Countly.init(...)");
-            return;
-        }
-
-        switch (eventName) {
-            case EVENT_CLICK:
-                viewAbilityHandler.onClick(adURL);
-                break;
-            case EVENT_EXPOSE:
-                viewAbilityHandler.onExpose(adURL);
-                break;
-            case EVENT_VIEWABILITY_EXPOSE:
-                viewAbilityHandler.onExpose(adURL, adView);
-                break;
-            case EVENT_VIEWABILITY_VIDEOEXPOSE:
-                viewAbilityHandler.onVideoExpose(adURL, adView);
-                break;
-
-        }
-    }
-
-    public void onJSExpose(String adURL, View adView) {
-        viewAbilityHandler.onJSExpose(adURL, adView, false);
-    }
-
-    public void onJSVideoExpose(String adURL, View adView) {
-        viewAbilityHandler.onJSExpose(adURL, adView, true);
-    }
-
-
-    public  void terminateSDK() {
-        try {
-            if (normalTimer != null) {
-                normalTimer.cancel();
-                normalTimer.purge();
-            }
-            if (failedTimer == null) {
-                failedTimer.cancel();
-                failedTimer.purge();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            normalTimer = null;
-            failedTimer = null;
-            sendNormalMessageThread = null;
-            sendFailedMessageThread = null;
-            mUrildBuilder = null;
-
-            if (viewAbilityHandler != null) viewAbilityHandler = null;
-
-        }
-    }
-
 
     /**
      * 接收来自ViewAbilityService的回调,触发监测事件
      *
-     * @param adURL
+     * @param adURL 带ViewAbility监测结果的链接
      */
     private  ViewAbilityEventListener viewAbilityEventListener = new ViewAbilityEventListener() {
         @Override

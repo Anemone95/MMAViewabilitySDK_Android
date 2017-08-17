@@ -1,6 +1,7 @@
 package cn.com.mma.mobile.tracking.api;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
 import java.util.HashMap;
@@ -276,29 +277,32 @@ public class ViewAbilityHandler {
             //[8] 最终将REDIRECTURL重新拼装到URL末尾,并回调原有Countly线程单独发送监测事件
             mmaSdkCallback.onEventPresent(trackURL);
 
+            //[LOCALTEST] 测试计数:普通曝光事件产生计数
+            if (Countly.LOCAL_TEST) {
 
-            KLog.i("********************************************");
-            KLog.i("originURL:" + originUrl);
-            KLog.i("monitiorType:" + monitorType);
-            KLog.i("REDIRECT_STR:" + redirectStr);
-            KLog.i("withoutRedirectURL:" + withoutRedirectURL);
-            KLog.i("adAreaID:" + adAreaID);
-            KLog.i("imressionID:" + impressionID);
-            KLog.i("isViewability:" + isViewAbility);
-            KLog.d("exposeURL origin:" + args[0]);
-            KLog.d("viewabilityURL origin :" + args[1]);
-            KLog.i("trackURL:" + trackURL);
-            KLog.i("adView:" + adView);
-            KLog.i("eventListener:" + mmaSdkCallback);
-            KLog.i("********************************************");
+                Intent intent = new Intent(Countly.ACTION_STATS_EXPOSE);
+                context.sendBroadcast(intent);
+
+                KLog.i("********************************************");
+                KLog.i("originURL:" + originUrl);
+                KLog.i("monitiorType:" + monitorType);
+                KLog.i("REDIRECT_STR:" + redirectStr);
+                KLog.i("withoutRedirectURL:" + withoutRedirectURL);
+                KLog.i("adAreaID:" + adAreaID);
+                KLog.i("imressionID:" + impressionID);
+                KLog.i("isViewability:" + isViewAbility);
+                KLog.d("exposeURL origin:" + args[0]);
+                KLog.d("viewabilityURL origin :" + args[1]);
+                KLog.i("trackURL:" + trackURL);
+                KLog.i("adView:" + adView);
+                KLog.i("eventListener:" + mmaSdkCallback);
+                KLog.i("********************************************");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        //TODO [TEST] 测试计数:普通曝光事件产生计数
-//        Intent intent = new Intent(Countly.ACTION_STATS_EXPOSE);
-//        context.sendBroadcast(intent);
     }
 
 

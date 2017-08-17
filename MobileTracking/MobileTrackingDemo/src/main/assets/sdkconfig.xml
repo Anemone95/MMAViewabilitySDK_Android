@@ -31,7 +31,7 @@
             <name>admaster</name>
             <!-- JS监测在线更新地址 -->
             <jsurl></jsurl>
-            <jsname>admaster_local.js</jsname>
+            <jsname>admaster.js</jsname>
 
             <domain>
                 <!-- 此处需修改为第三方检测公司监测代码的 host 部分 -->

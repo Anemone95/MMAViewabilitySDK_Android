@@ -1,6 +1,7 @@
 package cn.com.mma.mobile.tracking.viewability.origin.sniffer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import cn.com.mma.mobile.tracking.api.Countly;
 import cn.com.mma.mobile.tracking.util.klog.KLog;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityEventListener;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStatsResult;
@@ -128,9 +131,12 @@ public class AbilityWorker implements AbilityCallback {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                //TODO [TEST] 测试计数:带ViewAbility曝光事件产生计数
-//                Intent intent = new Intent(Countly.ACTION_STATS_VIEWABILITY);
-//                mContext.sendBroadcast(intent);
+
+                //[LOCALTEST] 测试计数:带ViewAbility曝光事件产生计数
+                if (Countly.LOCAL_TEST) {
+                    Intent intent = new Intent(Countly.ACTION_STATS_VIEWABILITY);
+                    mContext.sendBroadcast(intent);
+                }
 
                 mmaSdk.onEventPresent(abilityURL);
                 KLog.w(",ID:" + adAreaID + "监测完成,移除对应的数据");

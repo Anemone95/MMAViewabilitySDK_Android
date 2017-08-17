@@ -6,6 +6,7 @@ import android.view.View;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.Serializable;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import cn.com.mma.mobile.tracking.util.klog.KLog;
@@ -143,24 +144,27 @@ public class ViewAbilityExplorer implements Serializable {
         sb.append(adURL);
         try {
             JSONArray jsonArray = new JSONArray(events);
-            String temp = jsonArray.toString().replace("\"", "");
+            //[]内可视化数据移除所有的引号,并且整体Encode处理
+            String repArr = jsonArray.toString().replace("\"", "");
             String separator = viewAbilityStatsResult.getSeparator();
 
-            String vbevents = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITYEVENTS);
-            if (!TextUtils.isEmpty(vbevents)) {
+            String eventsArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITYEVENTS);
+            if (!TextUtils.isEmpty(eventsArgument)) {
                 sb.append(separator);
-                sb.append(vbevents + temp);
+                sb.append(eventsArgument);
+                sb.append(URLEncoder.encode(repArr, "utf-8"));
             }
 
-            String viewability = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITY);
-            if (!TextUtils.isEmpty(viewability)) {
+            String abilityArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITY);
+            if (!TextUtils.isEmpty(abilityArgument)) {
                 sb.append(separator);
-                sb.append(viewability + String.valueOf(isVisibleAbility ? 1 : 0));
+                sb.append(abilityArgument);
+                sb.append(String.valueOf(isVisibleAbility ? 1 : 0));
             }
-            String measureability = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADMEASURABILITY);
-            if (!TextUtils.isEmpty(measureability)) {
+            String measureArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADMEASURABILITY);
+            if (!TextUtils.isEmpty(measureArgument)) {
                 sb.append(separator);
-                sb.append(measureability + "1");
+                sb.append(measureArgument + "1");
             }
         } catch (Exception e) {
             e.printStackTrace();

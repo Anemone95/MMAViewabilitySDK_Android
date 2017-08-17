@@ -70,34 +70,39 @@ public class ViewAbilityJsExplorer {
 
 
     private void initWebViews() {
-        mWebView = new WebView(mContext);
-        WebSettings ws = mWebView.getSettings();
-        try {
-            ws.setJavaScriptEnabled(true);
-            //ws.setPluginState(WebSettings.PluginState.ON);
-            ws.setJavaScriptCanOpenWindowsAutomatically(false);
-            //ws.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
-            ws.setDomStorageEnabled(false);
-            ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
-            ws.setAllowFileAccess(false);
-            ws.setAppCacheEnabled(false);
-            // 以下两条设置可以使页面适应手机屏幕的分辨率，完整的显示在屏幕上
-            // 设置是否使用WebView推荐使用的窗口
-            ws.setUseWideViewPort(false);
-            // 设置WebView加载页面的模式
-            ws.setLoadWithOverviewMode(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        mWebView.clearHistory();
-        mWebView.clearCache(true);
-        isJavaScriptEnabled = ws.getJavaScriptEnabled();
-        //mWebView.setWebChromeClient(new MyWebChromeClient());
-        mWebView.setWebViewClient(new MyWebViewClient());
 
-        //初始化时加载空白HTML网页
-        initJavaScripts();
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mWebView = new WebView(mContext);
+                WebSettings ws = mWebView.getSettings();
+                try {
+                    ws.setJavaScriptEnabled(true);
+                    //ws.setPluginState(WebSettings.PluginState.ON);
+                    ws.setJavaScriptCanOpenWindowsAutomatically(false);
+                    //ws.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+                    ws.setDomStorageEnabled(false);
+                    ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
+                    ws.setAllowFileAccess(false);
+                    ws.setAppCacheEnabled(false);
+                    // 以下两条设置可以使页面适应手机屏幕的分辨率，完整的显示在屏幕上
+                    // 设置是否使用WebView推荐使用的窗口
+                    ws.setUseWideViewPort(false);
+                    // 设置WebView加载页面的模式
+                    ws.setLoadWithOverviewMode(false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                mWebView.clearHistory();
+                mWebView.clearCache(true);
+                isJavaScriptEnabled = ws.getJavaScriptEnabled();
+                //mWebView.setWebChromeClient(new MyWebChromeClient());
+                mWebView.setWebViewClient(new MyWebViewClient());
 
+                //初始化时加载空白HTML网页
+                initJavaScripts();
+            }
+        });
     }
 
     private void initJavaScripts() {
