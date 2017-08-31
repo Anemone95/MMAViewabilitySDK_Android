@@ -51,6 +51,8 @@ public class ViewAbilityStatsResult implements Serializable {
     private HashMap<String, String> viewabilityarguments;
     /* 对应配置项<separator>标签 监测链接QueryString分隔符 default=, */
     private String separator;
+    /* 对应配置项<equalizer>标签 监测链接QueryString连接符 default= */
+    private String equalizer;
     /* 如果监测链接里带有<argument>标签为REDIRECTURL的项,截取出的Value,等待ViewAbility拼装完毕后追加到链接末尾*/
     private String redirectURL;
     /* 是否是视频可视化监测*/
@@ -75,6 +77,10 @@ public class ViewAbilityStatsResult implements Serializable {
 
     public void setSeparator(String separator) {
         this.separator = separator;
+    }
+
+    public void setEqualizer(String equalizer) {
+        this.equalizer = equalizer;
     }
 
     public String getSeparator() {

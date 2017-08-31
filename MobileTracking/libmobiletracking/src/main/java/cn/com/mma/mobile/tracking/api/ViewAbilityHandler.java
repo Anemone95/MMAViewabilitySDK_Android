@@ -199,6 +199,7 @@ public class ViewAbilityHandler {
             //ViewAbilityStatsResult初始化,将配置文件的arguments映射到HashMap
             ViewAbilityStatsResult viewAbilityStatsResult = new ViewAbilityStatsResult();
             viewAbilityStatsResult.setSeparator(company.separator);
+            viewAbilityStatsResult.setEqualizer(company.equalizer);
             viewAbilityStatsResult.setViewabilityarguments(company.config.viewabilityarguments);
 
             //[3]  降噪处理:如果是onclick和onexpose使用arg[1]只清除原链接的2g属性;如果是url/video的ViewAbility使用arg[2]清除2g,2j,2f,2h

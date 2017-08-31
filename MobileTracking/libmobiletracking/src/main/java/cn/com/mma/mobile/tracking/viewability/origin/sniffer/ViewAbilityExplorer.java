@@ -145,22 +145,23 @@ public class ViewAbilityExplorer implements Serializable {
             JSONArray jsonArray = new JSONArray(events);
             String temp = jsonArray.toString().replace("\"", "");
             String separator = viewAbilityStatsResult.getSeparator();
+            String equalizer = viewAbilityStatsResult.getEqualizer();
 
             String vbevents = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITYEVENTS);
             if (!TextUtils.isEmpty(vbevents)) {
                 sb.append(separator);
-                sb.append(vbevents + temp);
+                sb.append(vbevents + equalizer + temp);
             }
 
             String viewability = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITY);
             if (!TextUtils.isEmpty(viewability)) {
                 sb.append(separator);
-                sb.append(viewability + String.valueOf(isVisibleAbility ? 1 : 0));
+                sb.append(viewability + equalizer + String.valueOf(isVisibleAbility ? 1 : 0));
             }
             String measureability = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADMEASURABILITY);
             if (!TextUtils.isEmpty(measureability)) {
                 sb.append(separator);
-                sb.append(measureability + "1");
+                sb.append(measureability + equalizer + "1");
             }
         } catch (Exception e) {
             e.printStackTrace();
