@@ -12,12 +12,12 @@
 
     <viewability>
         <!--viewability监测的时间间隔（ms）-->
-        <intervalTime>200</intervalTime>
+        <intervalTime>100</intervalTime>
         <!--满足viewability可见区域占总区域的百分比-->
         <viewabilityFrame>50</viewabilityFrame>
         <!--满足viewability总时长（s）-->
-        <viewabilityTime>2</viewabilityTime>
-        <viewabilityVideoTime>1</viewabilityVideoTime>
+        <viewabilityTime>1</viewabilityTime>
+        <viewabilityVideoTime>2</viewabilityVideoTime>
 
         <!--当前广告位最大监测时长（s）-->
         <maxExpirationSecs>120</maxExpirationSecs>
