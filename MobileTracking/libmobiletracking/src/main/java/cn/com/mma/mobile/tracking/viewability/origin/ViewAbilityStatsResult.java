@@ -87,6 +87,10 @@ public class ViewAbilityStatsResult implements Serializable {
         return separator;
     }
 
+    public String getEqualizer() {
+        return equalizer;
+    }
+
     public String get(String key) {
         return viewabilityarguments.get(key);
     }
