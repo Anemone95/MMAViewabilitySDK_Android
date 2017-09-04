@@ -147,11 +147,13 @@ public class ViewAbilityExplorer implements Serializable {
             //[]内可视化数据移除所有的引号,并且整体Encode处理
             String repArr = jsonArray.toString().replace("\"", "");
             String separator = viewAbilityStatsResult.getSeparator();
+            String equalizer = viewAbilityStatsResult.getEqualizer();
 
             String eventsArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITYEVENTS);
             if (!TextUtils.isEmpty(eventsArgument)) {
                 sb.append(separator);
                 sb.append(eventsArgument);
+                sb.append(equalizer);
                 sb.append(URLEncoder.encode(repArr, "utf-8"));
             }
 
@@ -159,17 +161,18 @@ public class ViewAbilityExplorer implements Serializable {
             if (!TextUtils.isEmpty(abilityArgument)) {
                 sb.append(separator);
                 sb.append(abilityArgument);
+                sb.append(equalizer);
                 sb.append(String.valueOf(isVisibleAbility ? 1 : 0));
             }
             String measureArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADMEASURABILITY);
             if (!TextUtils.isEmpty(measureArgument)) {
                 sb.append(separator);
-                sb.append(measureArgument + "1");
+                sb.append(measureArgument + equalizer + "1");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        sb.append(viewAbilityStatsResult.getRedirectURL());
+        //sb.append(viewAbilityStatsResult.getRedirectURL()); //fix：普通请求已经带跳转地址进行过一次跳转，可见请求不应该再进行跳转
         abilityURL = sb.toString();
 
         KLog.d("最终监测链接:" + abilityURL);
