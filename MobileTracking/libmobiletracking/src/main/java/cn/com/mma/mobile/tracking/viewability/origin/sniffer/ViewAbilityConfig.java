@@ -27,9 +27,9 @@ public class ViewAbilityConfig implements Serializable {
     public ViewAbilityConfig() {
 
         maxDuration = 2 * 60 * 1000;//默认两分钟
-        exposeValidDuration = 2 * 1000;//默认2s
-        videoExposeValidDuration = 1 * 1000;//视频最大曝光默认1s
-        inspectInterval = 200;//默认间隔200ms
+        exposeValidDuration = 1 * 1000;//默认1s
+        videoExposeValidDuration = 2 * 1000;//视频最大曝光默认2s
+        inspectInterval = 100;//默认间隔100ms
         maxUploadAmount = 10;//默认最大上报数量为10
         coverRateScale = 0.5f;//覆盖率默认50%
 
