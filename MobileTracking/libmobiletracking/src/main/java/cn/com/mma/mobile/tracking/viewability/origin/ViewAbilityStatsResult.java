@@ -79,6 +79,10 @@ public class ViewAbilityStatsResult implements Serializable {
         this.separator = separator;
     }
 
+    public void setEqualizer(String equalizer) {
+        this.equalizer = equalizer;
+    }
+
     public String getSeparator() {
         return separator;
     }
@@ -87,9 +91,6 @@ public class ViewAbilityStatsResult implements Serializable {
         return equalizer;
     }
 
-    public void setEqualizer(String equalizer) {
-        this.equalizer = equalizer;
-    }
 
     public String get(String key) {
         return viewabilityarguments.get(key);

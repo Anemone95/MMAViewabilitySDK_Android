@@ -175,7 +175,7 @@ public class ViewAbilityExplorer implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        sb.append(viewAbilityStatsResult.getRedirectURL());
+        //sb.append(viewAbilityStatsResult.getRedirectURL()); //fix：普通请求已经带跳转地址进行过一次跳转，可见请求不应该再进行跳转
         abilityURL = sb.toString();
 
         KLog.d("最终监测链接:" + abilityURL);
