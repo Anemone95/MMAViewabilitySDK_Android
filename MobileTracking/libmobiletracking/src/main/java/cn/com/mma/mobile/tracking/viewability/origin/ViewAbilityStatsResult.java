@@ -57,9 +57,9 @@ public class ViewAbilityStatsResult implements Serializable {
     public static final String MZ_COMPANY_DOMAIN = ".miaozhen.com";
     /* 存储<viewabilityarguments>标签内所有的属性 */
     private HashMap<String, String> viewabilityarguments;
-    /* 对应配置项<separator>标签 监测链接QueryString分隔符 default=, */
+    /* 对应配置项<separator>标签 属性分隔符 default=, */
     private String separator;
-    /* 对应配置项<equalizer>标签 监测链接QueryString连接符 default= */
+    /* 对应配置项<equalizer>标签 属性链接符 default=空字符*/
     private String equalizer;
     /* 如果监测链接里带有<argument>标签为REDIRECTURL的项,截取出的Value,等待ViewAbility拼装完毕后追加到链接末尾*/
     private String redirectURL;

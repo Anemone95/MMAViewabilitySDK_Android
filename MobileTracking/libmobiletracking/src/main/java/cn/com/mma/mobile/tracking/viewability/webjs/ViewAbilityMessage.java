@@ -61,8 +61,8 @@ public class ViewAbilityMessage {
             alpha = adView.getAlpha();
         }
 
-        //是否被隐藏
-        int hidden = (adView.getVisibility() == View.VISIBLE) ? 1 : 0;
+        //是否隐藏 0 不隐藏 1 隐藏
+        int hidden = (adView.getVisibility() == View.VISIBLE) ? 0 : 1;
 
         String visibleSize = "";
         float coverRate = 0.0f;

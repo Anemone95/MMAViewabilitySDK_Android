@@ -37,7 +37,7 @@ public class ViewFrameSlice implements Serializable {
 
     //2l 透明度 1.0=完全不透明 0.0=完全透明
     private float alpha;
-    //2m 是否隐藏 0=隐藏 1=不隐藏
+    //2m 是否隐藏 0=不隐藏 1=隐藏
     private int hidden;
     //2r 屏幕是否点亮 1=开屏 0 = 熄灭
     private int screenOn;
@@ -86,7 +86,7 @@ public class ViewFrameSlice implements Serializable {
 
 
             //是否被隐藏
-            hidden = (adView.getVisibility() == View.VISIBLE) ? 1 : 0;
+            hidden = (adView.getVisibility() == View.VISIBLE) ? 0 : 1;
 
             //可视尺寸 在当前屏幕范围内,排除不可见区域后,view的宽和高,滑动时实时变动(和WindowFrame相交运算)
             Rect screenRect = ViewHelper.getScreenRect(context);
@@ -180,7 +180,7 @@ public class ViewFrameSlice implements Serializable {
      */
     public boolean validateAdVisible(float confCoverRate) {
         //覆盖率<0.5 && 不隐藏 && 不完全透明 && 开屏
-        if (coverRate < confCoverRate && hidden == 1 && alpha > 0.001 && screenOn == 1) {
+        if (coverRate < confCoverRate && hidden == 0 && alpha > 0.001 && screenOn == 1) {
             visibleAbility = 1;
         } else {
             visibleAbility = 0;

@@ -450,7 +450,12 @@ public class ViewAbilityHandler {
         String[] splits = adUrl.split(company.separator);
         for (String item : splits) {
             if (item.startsWith(adAreaIdentifier)) {
-                adAreaId = item.substring(1, item.length());
+//                int startPoint = adAreaIdentifier.length() + company.equalizer.length();
+//                adAreaId = item.substring(startPoint, item.length());
+
+                //替换广告位标识符+属性连接符=广告位ID
+                String regex = adAreaIdentifier + company.equalizer;
+                adAreaId = item.replaceFirst(regex, "");
                 break;
             }
         }

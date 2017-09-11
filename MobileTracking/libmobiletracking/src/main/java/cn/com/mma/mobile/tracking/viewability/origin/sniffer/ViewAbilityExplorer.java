@@ -196,7 +196,10 @@ public class ViewAbilityExplorer implements Serializable {
             String measureArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADMEASURABILITY);
             if (!TextUtils.isEmpty(measureArgument)) {
                 sb.append(separator);
-                sb.append(measureArgument + equalizer + "1");
+                sb.append(measureArgument);
+                sb.append(equalizer);
+                //如果ViewAbility监测已经到了组装数据的环节,默认MeasureAbility = true
+                sb.append("1");
             }
 
             //mzcommit-加vx参数

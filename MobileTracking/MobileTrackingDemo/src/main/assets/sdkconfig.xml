@@ -29,9 +29,9 @@
         <company>
 
             <name>admaster</name>
-            <!-- JS监测在线更新地址 -->
-            <jsurl></jsurl>
-            <jsname>admaster.js</jsname>
+            <!-- JS监测在线更新地址 http://developer.admaster.com.cn/docs/mma-sdk.min.js -->
+            <jsurl>http://developer.admaster.com.cn/docs/mma-sdk.min.js</jsurl>
+            <jsname>mmasdk_mini.js</jsname>
 
             <domain>
                 <!-- 此处需修改为第三方检测公司监测代码的 host 部分 -->
@@ -279,9 +279,10 @@
 
                 </viewabilityarguments>
             </config>
-            <separator>,</separator>
-            <!--<separator>&amp;</separator>-->
-            <equalizer></equalizer>
+            <!-- <separator>&amp;</separator> -->
+            <separator>&amp;</separator>
+            <!-- <equalizer>=</equalizer> -->
+            <equalizer>=</equalizer>
             <!--如果设置true   timeStamper使用秒-->
             <timeStampUseSecond>true</timeStampUseSecond>
         </company>

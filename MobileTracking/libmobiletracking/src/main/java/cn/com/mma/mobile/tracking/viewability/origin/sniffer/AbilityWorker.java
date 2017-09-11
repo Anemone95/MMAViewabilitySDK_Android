@@ -26,7 +26,7 @@ public class AbilityWorker implements AbilityCallback {
 
     private ScheduledExecutorService scheduledExecutorService;
     private Context mContext;
-    private long inspectIntervial;//200ms
+    private long inspectIntervial;//100ms
     private ScheduledFuture<?> scheduledFuture = null;
     private int cacheIndex = 0;
     private static final int CACHEINDEX_AMOUNT = 10;
