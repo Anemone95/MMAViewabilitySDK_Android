@@ -48,7 +48,9 @@ public class Constant {
 	public static final String TRACKING_SDKVS = "SDKVS";
 	public static final String TRACKING_SDKVS_VALUE = "V2.0.0";
 	
-
+    //mzcommit-新增参数
+    public static final String TRACKING_NETWORKTYPE = "NETWORKTYPE";    //mw
+    public static final String MZ_COMPANY_NAME = "miaozhen";
 	/**
 	 * 新版常量 Begin
 	 */

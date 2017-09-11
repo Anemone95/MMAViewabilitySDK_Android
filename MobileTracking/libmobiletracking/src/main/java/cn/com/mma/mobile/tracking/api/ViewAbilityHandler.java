@@ -47,7 +47,7 @@ public class ViewAbilityHandler {
     private SDK sdkConfig;
     /* ViewAbility native 方式监测服务 */
     private ViewAbilityService viewAbilityService;
-     /* ViewAbility JS 方式监测服务 */
+    /* ViewAbility JS 方式监测服务 */
     private ViewAbilityJsService viewAbilityJsService;
 
     public ViewAbilityHandler(Context context, ViewAbilityEventListener mmaSdkCallback, SDK sdk) {
@@ -64,8 +64,7 @@ public class ViewAbilityHandler {
     }
 
 
-
-    public void onJSExpose(String adURL,View adView,boolean isVideo) {
+    public void onJSExpose(String adURL, View adView, boolean isVideo) {
 
         //Company为空,不监测
         Company company = getCompany(adURL);
@@ -108,14 +107,16 @@ public class ViewAbilityHandler {
         handlerOriginURL(originUrl, MonitorType.EXPOSEWITHABILITY, adView);
     }
 
+
     /**
-     * 带可视化的视频曝光监测
-     *
-     * @param originUrl
-     * @param videoView
-     */
-    public void onVideoExpose(String originUrl, View videoView) {
-        handlerOriginURL(originUrl, MonitorType.VIDEOEXPOSEWITHABILITY, videoView);
+         * 带可视化的视频曝光监测
+         *
+         * @param originUrl
+         * @param videoView
+         * @param videoPlayType 传视频播放类型，1-自动播放，2-手动播放，0-无法识别
+         */
+    public void onVideoExpose(String originUrl, View videoView, int videoPlayType) {
+        handlerOriginURL(originUrl, MonitorType.VIDEOEXPOSEWITHABILITY, videoView, videoPlayType);
     }
 
 
@@ -145,6 +146,11 @@ public class ViewAbilityHandler {
 
 
     private void handlerOriginURL(String originUrl, MonitorType monitorType, View adView) {
+        handlerOriginURL(originUrl, monitorType, adView, 0);
+    }
+
+
+    private void handlerOriginURL(String originUrl, MonitorType monitorType, View adView, int videoPlayType) {
 
 
         //Company为空,不监测
@@ -204,8 +210,13 @@ public class ViewAbilityHandler {
             viewAbilityStatsResult.setViewabilityarguments(company.config.viewabilityarguments);
 
             //[3]  降噪处理:如果是onclick和onexpose使用arg[1]只清除原链接的2g属性;如果是url/video的ViewAbility使用arg[2]清除2g,2j,2f,2h
-            String[] args = filterOriginIdentifiers(viewAbilityStatsResult, company, withoutRedirectURL);
-
+            //mzcommit-秒针url使用秒针的过滤函数
+            String[] args;
+            if (!TextUtils.isEmpty(company.name) && company.name.equals(Constant.MZ_COMPANY_NAME)) {
+                args = mzfilterOriginIdentifier(company, withoutRedirectURL);
+            } else {
+                args = filterOriginIdentifiers(viewAbilityStatsResult, company, withoutRedirectURL);
+            }
 
             //[4] 判断原剔除U字段后的URL是否是ViewAbility监测链接:带有2j字段
             StringBuffer exposeURL = new StringBuffer();
@@ -219,6 +230,8 @@ public class ViewAbilityHandler {
                 isViewAbility = checkViewAbilityEnabled(company, withoutRedirectURL);//使用原URL判断是否具有参数
                 if (monitorType == MonitorType.VIDEOEXPOSEWITHABILITY)
                     viewAbilityStatsResult.setVideoExpose(true); //标记当前可视化监测来自视频的ViewAbility
+                    viewAbilityStatsResult.setVideoPlayType(videoPlayType); //记录视频播放类型
+                    viewAbilityStatsResult.setVideoDuration(getVideoDurationWithUrl(company, originUrl));  //从请求中获取视频广告时长，用于中点监测
             }
 
 
@@ -250,7 +263,27 @@ public class ViewAbilityHandler {
 
             exposeURL.append(impressionValue);
 
+            //mzcommit-秒针view非空即进行可见监测，可见监测发的普通曝光要加vx=0
+            if (!TextUtils.isEmpty(company.name) && company.name.equals(Constant.MZ_COMPANY_NAME)
+                    && adView != null && (adView instanceof View)) {
 
+                //进行可见监测
+                isViewAbility = true;
+
+                //追加vx字段
+                String mzViewabilityType = "";
+                String mzViewability = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY);
+                if (!TextUtils.isEmpty(mzViewability)) {
+                    sb = new StringBuilder();
+                    sb.append(company.separator);
+                    sb.append(mzViewability);
+                    sb.append(company.equalizer);
+                    sb.append("0");
+                    mzViewabilityType = sb.toString();
+                }
+
+                exposeURL.append(mzViewabilityType);
+            }
             //[7] 如果是viewability监测,view为空时2j/2f/2h使用默认value拼装到URL后,以正常曝光链接上报
             exposeURL.append(redirectStr);
             String trackURL = exposeURL.toString();
@@ -545,5 +578,79 @@ public class ViewAbilityHandler {
         return null;
     }
 
+    //mzcommit-url中包含的配置文件中已有的参数去掉后重新添加
+    private String[] mzfilterOriginIdentifier(Company company, String originUrl) {
+
+        StringBuffer exposeURL = new StringBuffer();
+        StringBuffer viewabilityURL = new StringBuffer();
+
+        String[] args = new String[2];
+
+        try {
+            HashMap<String, Argument> requiredViewabilityarguments = company.config.viewabilityarguments;
+            String separator = company.separator;
+            String equalizer = company.equalizer;
+
+            //去掉viewabilityarguments中的参数
+            for (String argumentKey : requiredViewabilityarguments.keySet()) {
+                String key = argumentKey;
+                if (!TextUtils.isEmpty(key)) {
+                    String value = requiredViewabilityarguments.get(key).value;
+                    if (!TextUtils.isEmpty(value)) {
+                        if (key.equals(ViewAbilityStatsResult.MZ_VIEWABILITY_RECORD)) {
+                            continue;
+                        } else if (key.equals(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_DURATION)) {
+                            continue;
+                        }
+                        if (originUrl.contains(separator + value + equalizer)) {
+                            originUrl = originUrl.replaceAll(separator + value + equalizer + "[^" + separator + "]*", "");
+                        }
+                    }
+                }
+            }
+
+            exposeURL.append(originUrl);
+            viewabilityURL.append(originUrl);
+
+            args[0] = exposeURL.toString();
+            args[1] = viewabilityURL.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return args;
+    }
+
+    //mzcommit-从url中取视频广告时长进行中点监测
+    private int getVideoDurationWithUrl(Company company, String url) {
+        try {
+            String key = company.config.viewabilityarguments.get(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_DURATION).value;
+            if (TextUtils.isEmpty(key)) {
+                return 0;
+            }
+
+            String value = getKvValueFromUrl(url, company.separator, company.equalizer, key);
+            if (value != null) {
+                return Integer.valueOf(value);
+            }
+            return  0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    //mzcommit
+    private String getKvValueFromUrl(final String url, final String separator, final String equalizer, final String key) {
+        for (String kv : url.split(separator)) {
+            if (kv.startsWith(key+equalizer)) {
+                int idx = kv.indexOf(equalizer);
+                return kv.substring(idx+1).trim();
+            }
+        }
+        return null;
+    }
 
 }

@@ -33,6 +33,14 @@ public class ViewFrameBlock implements Serializable {
     /*从配置文件读取全局配置参数*/
     private ViewAbilityConfig config;
 
+    //mzcommit-记录上一次slice的可见判定结果
+    private boolean prevIsVisibleSlice = false;
+    private boolean isMZURL = false;
+
+    //mzcommit
+    public void setIsMZURL(boolean isMZURL) {
+        this.isMZURL = isMZURL;
+    }
 
     public ViewFrameBlock(ViewAbilityConfig config) {
         this.config = config;
@@ -101,6 +109,8 @@ public class ViewFrameBlock implements Serializable {
 
         KLog.v("[collectAndPush] frames`s len:" + framesList.size() + "  needRecord:" + isValided + "  is visible:" + visible + "   持续曝光时长:" + exposeDuration + "    持续监测时长:" + maxDuration + "[" + Thread.currentThread().getId() + "]");
 
+        //mzcommit-更新可见状态
+        prevIsVisibleSlice = visible;
     }
 
 
@@ -113,9 +123,15 @@ public class ViewFrameBlock implements Serializable {
     private boolean isValidedSlice(ViewFrameSlice currentSlice) {
         //如果nextPoint不存在.则直接验证通过
         if (lastSlice == null) return true;
-        //如果与时间轴内最后一条数据相同,则验证不通过(本次不需要记录)
-        if (lastSlice.isSameAs(currentSlice)) return false;
-        return true;
+
+        if (isMZURL) {
+            //mzcommit-如果是miaozhen的url，把状态变化时的slice压入时间轴
+            return prevIsVisibleSlice != currentSlice.validateAdVisible(config.getCoverRateScale());
+        } else {
+            //如果与时间轴内最后一条数据相同,则验证不通过(本次不需要记录)
+            if (lastSlice.isSameAs(currentSlice)) return false;
+            return true;
+        }
     }
 
 

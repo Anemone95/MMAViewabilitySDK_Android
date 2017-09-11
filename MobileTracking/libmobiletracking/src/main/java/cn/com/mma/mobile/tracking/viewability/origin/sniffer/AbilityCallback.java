@@ -6,6 +6,9 @@ package cn.com.mma.mobile.tracking.viewability.origin.sniffer;
  */
 public interface AbilityCallback {
 
-    void onViewAbilityFinished(String adAreaID, String abilityUrl);
+    void onViewAbilityFinished(String adAreaID,String abilityUrl);
+    void onSend(String url);    //mzcommit-上报请求
+    void onViewAbilitySend(String url);    //mzcommit-上报可见请求
+    void onFinished(String adAreaID);   //mzcommit-停止定时器
 
 }

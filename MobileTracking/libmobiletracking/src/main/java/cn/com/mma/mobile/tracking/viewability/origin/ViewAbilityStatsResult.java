@@ -47,6 +47,14 @@ public class ViewAbilityStatsResult implements Serializable {
     /* 对应配置项viewabilityarguments内的<argument>标签 ViewAbility监测结果是否可测量 default=2h */
     public static final String ADMEASURABILITY = "AdMeasurability";
 
+    //mzcommit-增加参数
+    public static final String MZ_VIEWABILITY_THRESHOLD = "MZviewabilityThreshold";             //ve
+    public static final String MZ_VIEWABILITY_VIDEO_PLAYTYPE = "MZviewabilityVideoPlayType";    //vg
+    public static final String MZ_VIEWABILITY_VIDEO_PROGRESS = "MZviewabilityVideoProgress";    //vc
+    public static final String MZ_VIEWABILITY_VIDEO_DURATION = "MZviewabilityVideoDuration";    //vb
+    public static final String MZ_VIEWABILITY = "MZviewability";                                //vx
+    public static final String MZ_VIEWABILITY_RECORD = "MZviewabilityRecord";                   //va
+    public static final String MZ_COMPANY_DOMAIN = ".miaozhen.com";
     /* 存储<viewabilityarguments>标签内所有的属性 */
     private HashMap<String, String> viewabilityarguments;
     /* 对应配置项<separator>标签 监测链接QueryString分隔符 default=, */
@@ -58,6 +66,9 @@ public class ViewAbilityStatsResult implements Serializable {
     /* 是否是视频可视化监测*/
     private boolean isVideoExpose;
 
+    private int videoPlayType;  //mzcommit-加播放类型：0-无法识别，1-自动，2-手动
+
+    private int videoDuration;  //mzcommit-视频广告时长，vb，从url中获取
 
     public boolean isVideoExpose() {
         return isVideoExpose;
@@ -79,17 +90,35 @@ public class ViewAbilityStatsResult implements Serializable {
         this.separator = separator;
     }
 
-    public void setEqualizer(String equalizer) {
-        this.equalizer = equalizer;
-    }
-
     public String getSeparator() {
         return separator;
+    }
+
+    //mzcommit-begin
+    public void setEqualizer(String equalizer) {
+        this.equalizer = equalizer;
     }
 
     public String getEqualizer() {
         return equalizer;
     }
+
+    public void setVideoPlayType(int videoPlayType) {
+        this.videoPlayType = videoPlayType;
+    }
+
+    public int getVideoPlayType() {
+        return videoPlayType;
+    }
+
+    public void setVideoDuration(int videoDuration) {
+        this.videoDuration = videoDuration;
+    }
+
+    public int getVideoDuration() {
+        return videoDuration;
+    }
+    //end
 
     public String get(String key) {
         return viewabilityarguments.get(key);

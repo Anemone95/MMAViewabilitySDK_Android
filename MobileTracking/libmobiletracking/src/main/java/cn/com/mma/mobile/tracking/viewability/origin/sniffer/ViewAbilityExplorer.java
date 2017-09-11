@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
+
+import cn.com.mma.mobile.tracking.util.CommonUtil;
 import cn.com.mma.mobile.tracking.util.klog.KLog;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStatsResult;
 
@@ -39,6 +41,10 @@ public class ViewAbilityExplorer implements Serializable {
     /*结合所有参数判断adView是否可视化 0=不可见 1=可见*/
     private boolean isVisibleAbility;
 
+    //mzcommit-中点监测
+    private boolean mzMidOver = false;
+    private boolean mzEndOver = false;
+    private String mzVideoProgress = null;
     /*结合所有参数判断adView是否可视化 0=不可见 1=可见*/
     //private boolean isMeasureAbility;
 
@@ -55,6 +61,7 @@ public class ViewAbilityExplorer implements Serializable {
         abilityStatus = AbilityStatus.EXPLORERING;
         this.config = config;
         viewFrameBlock = new ViewFrameBlock(config);
+        viewFrameBlock.setIsMZURL(isMZURL(adURL)); //mzcommit
         isVisibleAbility = false;
         //isMeasureAbility = true;
     }
@@ -99,6 +106,22 @@ public class ViewAbilityExplorer implements Serializable {
 
         boolean isBreak = false;
 
+        //mzcommit-满足条件进行中点监测，否则把mzEndOver置成true，走普通的数据上报流程
+        if (viewAbilityStatsResult.isVideoExpose() && viewAbilityStatsResult.getVideoDuration() > 0) {
+            mzMidPointVerifyUpload();
+        } else  {
+            mzEndOver = true;
+        }
+
+        //mzcommit-如果已经上报过可见数据了，则只进行中点监测，不再重复上报数据，等超时或view释放停止监测
+        if (isVisibleAbility) {
+            if (viewFrameBlock.getMaxDuration() >= config.getMaxDuration() || adView == null) {
+                if (abilityCallback != null) {
+                    abilityCallback.onFinished(adAreaID);
+                }
+            }
+            return;
+        }
 
         //条件1: 达到曝光最大时长并且当前广告无曝光
         if (viewFrameBlock.getMaxDuration() >= config.getMaxDuration() && viewFrameBlock.getExposeDuration() < 0.001) {
@@ -142,6 +165,9 @@ public class ViewAbilityExplorer implements Serializable {
         String abilityURL;
         StringBuilder sb = new StringBuilder();
         sb.append(adURL);
+
+        boolean isMiaozhen = isMZURL(adURL);    //mzcommit
+
         try {
             JSONArray jsonArray = new JSONArray(events);
             //[]内可视化数据移除所有的引号,并且整体Encode处理
@@ -151,10 +177,13 @@ public class ViewAbilityExplorer implements Serializable {
 
             String eventsArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITYEVENTS);
             if (!TextUtils.isEmpty(eventsArgument)) {
-                sb.append(separator);
-                sb.append(eventsArgument);
-                sb.append(equalizer);
-                sb.append(URLEncoder.encode(repArr, "utf-8"));
+                //mzcommit-如果不是miaozhen直接记录，如果是miaozhen需要url中配置va=1才记录
+                if( !isMiaozhen || (isMiaozhen && isNeedRecord(adURL))) {
+                	sb.append(separator);
+                	sb.append(eventsArgument);
+                	sb.append(equalizer);
+                	sb.append(URLEncoder.encode(repArr, "utf-8"));
+				}
             }
 
             String abilityArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITY);
@@ -169,6 +198,31 @@ public class ViewAbilityExplorer implements Serializable {
                 sb.append(separator);
                 sb.append(measureArgument + equalizer + "1");
             }
+
+            //mzcommit-加vx参数
+            String mzViewability = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY);
+            if (!TextUtils.isEmpty(mzViewability)) {
+                sb.append(separator);
+                sb.append(mzViewability);
+                sb.append(equalizer);
+                sb.append(String.valueOf(isVisibleAbility ? 1 : 4));
+            }
+            //mzcommit-加ve参数
+            String mzViewabilityThreshold = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_THRESHOLD);
+            if (!TextUtils.isEmpty(mzViewabilityThreshold)) {
+                sb.append(separator);
+                sb.append(mzViewabilityThreshold);
+                sb.append(equalizer);
+                sb.append(String.valueOf(viewAbilityStatsResult.isVideoExpose() ? config.getVideoExposeValidDuration() : config.getExposeValidDuration()));
+            }
+            //mzcommit-加vg参数
+            String mzViewabilityVideoPlayType = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_PLAYTYPE);
+            if (!TextUtils.isEmpty(mzViewabilityVideoPlayType)) {
+                sb.append(separator);
+                sb.append(mzViewabilityVideoPlayType);
+                sb.append(equalizer);
+                sb.append(String.valueOf(viewAbilityStatsResult.getVideoPlayType()));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -179,7 +233,12 @@ public class ViewAbilityExplorer implements Serializable {
 
         //TODO 回调给AbilityWorker,使用MMASDK执行曝光操作
         if (abilityCallback != null) {
-            abilityCallback.onViewAbilityFinished(adAreaID, abilityURL);
+            //mzcommit-可见请求，中点监测还没结束，先把可见数据上报，但不停止定时器
+            if (isVisibleAbility && !mzEndOver) {
+                abilityCallback.onViewAbilitySend(abilityURL);
+            } else {
+                abilityCallback.onViewAbilityFinished(adAreaID, abilityURL);
+            }
         }
         KLog.e("<-------------------------------------------------------------------------------->");
         abilityStatus = AbilityStatus.UPLOADED;
@@ -203,5 +262,64 @@ public class ViewAbilityExplorer implements Serializable {
         return "[ impressionID=" + impressionID + ",adAreaID=" + adAreaID + ",adURL=" + adURL + ",view=" + adView + " block=" + viewFrameBlock.toString() + " ]";
     }
 
+    //mzcommit-判断是不是miaozhen的url
+    private boolean isMZURL(String url) {
+        try {
+            String host = CommonUtil.getHostURL(url);
+            return host.endsWith(ViewAbilityStatsResult.MZ_COMPANY_DOMAIN);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    //mzcommit-从url中取va，va=1记录状态信息
+    private boolean isNeedRecord(String url) {
+        String mzViewabilityRecord = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_RECORD);
+        return !TextUtils.isEmpty(mzViewabilityRecord)
+                && url.contains(viewAbilityStatsResult.getSeparator() + mzViewabilityRecord + viewAbilityStatsResult.getEqualizer() + "1");
+    }
+
+    //mzcommit-中点监测
+    private void mzMidPointVerifyUpload() {
+        if (mzEndOver) {
+            return;
+        }
+
+        //取vc参数
+        if (mzVideoProgress == null) {
+            mzVideoProgress = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_PROGRESS);
+            if (TextUtils.isEmpty(mzVideoProgress)) {
+                mzEndOver = true;
+                return;
+            }
+        }
+
+        //视频中点发请求
+        if (!mzMidOver && (viewFrameBlock.getMaxDuration() >= viewAbilityStatsResult.getVideoDuration()/2)) {
+
+            mzMidOver = true;
+
+            if (abilityCallback != null) {
+                String midURL = adURL + viewAbilityStatsResult.getSeparator() + mzVideoProgress + viewAbilityStatsResult.getEqualizer() + "mid";
+                abilityCallback.onSend(midURL);
+            }
+        }
+
+        //视频结束发请求
+        if (!mzEndOver && (viewFrameBlock.getMaxDuration() >= viewAbilityStatsResult.getVideoDuration())) {
+
+            mzEndOver = true;
+
+            if (abilityCallback != null) {
+                String endURL = adURL + viewAbilityStatsResult.getSeparator() + mzVideoProgress + viewAbilityStatsResult.getEqualizer() + "end";
+                abilityCallback.onSend(endURL);
+
+                //如果上报过可见数据，中点监测结束还要停止定时器
+                if (isVisibleAbility) {
+                    abilityCallback.onFinished(adAreaID);
+                }
+            }
+        }
+    }
 
 }

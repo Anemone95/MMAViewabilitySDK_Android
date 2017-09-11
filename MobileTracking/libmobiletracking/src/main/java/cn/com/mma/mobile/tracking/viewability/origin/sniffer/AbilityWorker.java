@@ -147,6 +147,44 @@ public class AbilityWorker implements AbilityCallback {
         }).start();
     }
 
+    //mzcommit-中点监测
+    @Override
+    public void onFinished(final String adAreaID) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mCacheManager.removeObject(adAreaID);
+            }
+        }).start();
+    }
+    //mzcommit-中点监测
+    @Override
+    public void onSend(final String url) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mmaSdk.onEventPresent(url);
+            }
+        }).start();
+    }
+
+    //mzcommit-中点监测
+    @Override
+    public void onViewAbilitySend(final String url) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //TODO [TEST] 测试计数:带ViewAbility曝光事件产生计数
+                Intent intent = new Intent(Countly.ACTION_STATS_VIEWABILITY);
+                mContext.sendBroadcast(intent);
+
+                mmaSdk.onEventPresent(url);
+            }
+        }).start();
+    }
 
     /**
      * 定时器,每隔

@@ -1,10 +1,12 @@
 package cn.com.mma.mobile.tracking.api;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
 import cn.com.mma.mobile.tracking.bean.SDK;
 import cn.com.mma.mobile.tracking.util.Logger;
 import cn.com.mma.mobile.tracking.util.SdkConfigUpdateUtil;
@@ -131,15 +133,20 @@ public class Countly {
         triggerEvent(EVENT_VIEWABILITY_EXPOSE, adURL, adView);
     }
 
+    public void onVideoExpose(String adURL, View videoView) {
+        onVideoExpose(adURL, videoView, 0);
+    }
+
     /**
      * 可视化视频曝光事件监测接口
      *
      * @param adURL     监测链接
      * @param videoView 监测广告视频对象
+     * @param videoPlayType 视频播放类型，1-自动播放，2-手动播放，0-无法识别
      */
-    public void onVideoExpose(String adURL, View videoView) {
+    public void onVideoExpose(String adURL, View videoView, int videoPlayType) {
 
-        triggerEvent(EVENT_VIEWABILITY_VIDEOEXPOSE, adURL, videoView);
+        triggerEvent(EVENT_VIEWABILITY_VIDEOEXPOSE, adURL, videoView, videoPlayType);
     }
 
     /**
@@ -190,6 +197,12 @@ public class Countly {
 
 
     private  void triggerEvent(String eventName, String adURL, View adView) {
+        triggerEvent(eventName, adURL, adView, 0);
+    }
+
+
+
+    private  void triggerEvent(String eventName, String adURL, View adView, int videoPlayType) {
 
         if (sIsInitialized == false || mUrildBuilder == null) {
             Logger.e("The static method " + eventName + "(...) should be called before calling Countly.init(...)");
@@ -207,7 +220,7 @@ public class Countly {
                 viewAbilityHandler.onExpose(adURL, adView);
                 break;
             case EVENT_VIEWABILITY_VIDEOEXPOSE:
-                viewAbilityHandler.onVideoExpose(adURL, adView);
+                viewAbilityHandler.onVideoExpose(adURL, adView, videoPlayType);
                 break;
 
         }
