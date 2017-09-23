@@ -15,7 +15,7 @@ import cn.com.mma.mobile.tracking.viewability.common.ViewHelper;
 
 
 /**
- * Created by admaster on 17/6/16.
+ * Created by mma on 17/6/16.
  */
 public class ViewFrameSlice implements Serializable {
 

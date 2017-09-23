@@ -7,7 +7,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 /**
- * Created by admaster on 17/6/20.
+ * Created by mma on 17/6/20.
  */
 public class ViewHelper {
 

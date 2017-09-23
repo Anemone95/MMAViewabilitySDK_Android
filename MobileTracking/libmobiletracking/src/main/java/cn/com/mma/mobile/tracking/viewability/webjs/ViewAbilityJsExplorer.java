@@ -29,7 +29,7 @@ import cn.com.mma.mobile.tracking.util.klog.KLog;
 /**
  * 每一个ViewAbilityJsExplorer实体相当于一个WebView对象,同一个公司检测下只存在一个,KEY = Company.NAME
  * 同一Company下如果同时存在多个监测,在各自Explorer内循环执行
- * Created by admaster on 17/7/28.
+ * Created by mma on 17/7/28.
  */
 public class ViewAbilityJsExplorer {
 

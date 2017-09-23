@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import cn.com.mma.mobile.tracking.util.CommonUtil;
 
 /**
- * Created by admaster on 17/7/28.
+ * Created by mma on 17/7/28.
  */
 public class ViewAbilityJsBean {
 

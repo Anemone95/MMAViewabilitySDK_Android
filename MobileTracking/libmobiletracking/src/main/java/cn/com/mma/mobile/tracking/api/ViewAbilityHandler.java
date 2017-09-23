@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import cn.com.mma.mobile.tracking.bean.Argument;
 import cn.com.mma.mobile.tracking.bean.Company;
 import cn.com.mma.mobile.tracking.bean.SDK;
@@ -25,7 +27,7 @@ import cn.com.mma.mobile.tracking.viewability.webjs.ViewAbilityJsService;
 
 /**
  * Countly 和 ViewAbilityService中间件:负责控制View Ability的初始化和监测
- * Created by admaster on 17/6/22.
+ * Created by mma on 17/6/22.
  */
 public class ViewAbilityHandler {
 
@@ -174,7 +176,6 @@ public class ViewAbilityHandler {
         if (matcher.find()) {
             redirectStr = matcher.group(0);
         }
-        //redirectStr e.g. ,uhttp://wwww.admaster.com.cn/conf2jaaa,2fbbb,2hccc
 
 
         //[2] 监测链接截取掉REDIRECTURL字段之后的所有内容,重新组装为withoutRedirectURL
@@ -198,7 +199,6 @@ public class ViewAbilityHandler {
             e.printStackTrace();
             withoutRedirectURL = originUrl;
         }
-        //withoutRedirectURL e.g. http://vxyz.admaster.com.cn/w/a86218,b1729679,c3259,i0,m202,8a2,8b2,h
 
 
         try {
@@ -208,6 +208,7 @@ public class ViewAbilityHandler {
             viewAbilityStatsResult.setSeparator(company.separator);
             viewAbilityStatsResult.setEqualizer(company.equalizer);
             viewAbilityStatsResult.setViewabilityarguments(company.config.viewabilityarguments);
+            viewAbilityStatsResult.setIsMZURL(company.name.equals(Constant.MZ_COMPANY_NAME));
 
             //[3]  降噪处理:如果是onclick和onexpose使用arg[1]只清除原链接的2g属性;如果是url/video的ViewAbility使用arg[2]清除2g,2j,2f,2h
             //mzcommit-秒针url使用秒针的过滤函数
@@ -231,7 +232,9 @@ public class ViewAbilityHandler {
                 if (monitorType == MonitorType.VIDEOEXPOSEWITHABILITY)
                     viewAbilityStatsResult.setVideoExpose(true); //标记当前可视化监测来自视频的ViewAbility
                     viewAbilityStatsResult.setVideoPlayType(videoPlayType); //记录视频播放类型
-                    viewAbilityStatsResult.setVideoDuration(getVideoDurationWithUrl(company, originUrl));  //从请求中获取视频广告时长，用于中点监测
+                    viewAbilityStatsResult.setVideoDuration((int)getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_DURATION));  //从请求中获取视频广告时长，用于中点监测
+                    viewAbilityStatsResult.setUrlExposeDuration((int)getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_CONFIG_THRESHOLD));
+                    viewAbilityStatsResult.setUrlArea(getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_CONFIG_AREA));
             }
 
 
@@ -384,7 +387,6 @@ public class ViewAbilityHandler {
     /**
      * 判断是否是可视化监测专用链接
      * 链接里是否包含2j(ADVIEWABILITYEVENTS)
-     * e.g. http://v.admaster.com.cn/w/a86218,b1729679,c3259,i0,m202,8a2,8b2,h,2j
      *
      * @param originUrl
      * @return
@@ -497,7 +499,6 @@ public class ViewAbilityHandler {
 
 
     /**
-     * 原始链接:http://v.admaster.com.cn/w/a86218,b1729679,c3259,i0,m202,8a2,8b2,h,2j
      * 拼装2g字段
      *
      * @param company
@@ -628,16 +629,16 @@ public class ViewAbilityHandler {
     }
 
     //mzcommit-从url中取视频广告时长进行中点监测
-    private int getVideoDurationWithUrl(Company company, String url) {
+    private float getValueFromUrl(Company company, String url, String tag) {
         try {
-            String key = company.config.viewabilityarguments.get(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_DURATION).value;
+            String key = company.config.viewabilityarguments.get(tag).value;
             if (TextUtils.isEmpty(key)) {
                 return 0;
             }
 
             String value = getKvValueFromUrl(url, company.separator, company.equalizer, key);
             if (value != null) {
-                return Integer.valueOf(value);
+                return Float.parseFloat(value);
             }
             return  0;
 

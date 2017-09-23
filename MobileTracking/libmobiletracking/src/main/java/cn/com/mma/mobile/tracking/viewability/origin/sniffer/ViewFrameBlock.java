@@ -36,10 +36,15 @@ public class ViewFrameBlock implements Serializable {
     //mzcommit-记录上一次slice的可见判定结果
     private boolean prevIsVisibleSlice = false;
     private boolean isMZURL = false;
+    private float urlCoverRateScale;
 
     //mzcommit
     public void setIsMZURL(boolean isMZURL) {
         this.isMZURL = isMZURL;
+    }
+
+    public void setUrlCoverRateScale(float rate) {
+        this.urlCoverRateScale = rate;
     }
 
     public ViewFrameBlock(ViewAbilityConfig config) {
@@ -91,7 +96,13 @@ public class ViewFrameBlock implements Serializable {
         lastSlice = slice;
 
         //当前是可见有效帧,统计曝光时长(非累加时长:上一次可见---到本次可见为有效时间)
-        boolean visible = slice.validateAdVisible(config.getCoverRateScale());
+        float coverRate;
+        if (isMZURL && urlCoverRateScale > 0 && urlCoverRateScale < 1) {
+            coverRate = urlCoverRateScale;
+        } else {
+            coverRate = config.getCoverRateScale();
+        }
+        boolean visible = slice.validateAdVisible(coverRate);
         if (visible) {
             //如果时间轴内可见有效时间片不存在
             if (visibleSlice == null) {
@@ -125,8 +136,14 @@ public class ViewFrameBlock implements Serializable {
         if (lastSlice == null) return true;
 
         if (isMZURL) {
+            float coverRate;
+            if (urlCoverRateScale > 0 && urlCoverRateScale < 1) {
+                coverRate = urlCoverRateScale;
+            } else {
+                coverRate = config.getCoverRateScale();
+            }
             //mzcommit-如果是miaozhen的url，把状态变化时的slice压入时间轴
-            return prevIsVisibleSlice != currentSlice.validateAdVisible(config.getCoverRateScale());
+            return prevIsVisibleSlice != currentSlice.validateAdVisible(coverRate);
         } else {
             //如果与时间轴内最后一条数据相同,则验证不通过(本次不需要记录)
             if (lastSlice.isSameAs(currentSlice)) return false;

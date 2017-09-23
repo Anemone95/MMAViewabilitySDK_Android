@@ -114,10 +114,9 @@ public class AbilityWorker implements AbilityCallback {
                 explorers.remove(adAreaID);
             }
 
-            ViewAbilityExplorer normalExplorer = new ViewAbilityExplorer(adAreaID, adURL, adView, impressionID, config);
+            ViewAbilityExplorer normalExplorer = new ViewAbilityExplorer(adAreaID, adURL, adView, impressionID, config, result);
             //收集完数据回调到本类内使用mmasdk发送最终监测URL
             normalExplorer.setAbilityCallback(this);
-            normalExplorer.setViewAbilityStatsResult(result);
             explorers.put(adAreaID, normalExplorer);
         } catch (Exception e) {
             e.printStackTrace();

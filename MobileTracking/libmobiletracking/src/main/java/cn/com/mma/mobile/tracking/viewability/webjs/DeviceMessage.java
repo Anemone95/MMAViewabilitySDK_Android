@@ -8,7 +8,7 @@ import cn.com.mma.mobile.tracking.util.CommonUtil;
 import cn.com.mma.mobile.tracking.util.DeviceInfoUtil;
 
 /**
- * Created by admaster on 17/7/30.
+ * Created by mma on 17/7/30.
  */
 public class DeviceMessage {
 

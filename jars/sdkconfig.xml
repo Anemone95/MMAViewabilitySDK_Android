@@ -530,6 +530,18 @@
                         <urlEncode>true</urlEncode>
                         <isRequired>true</isRequired>
                     </argument>
+                    <argument>
+                        <key>MZviewabilityConfigArea</key>
+                        <value>vh</value>
+                        <urlEncode>true</urlEncode>
+                        <isRequired>true</isRequired>
+                    </argument>
+                    <argument>
+                        <key>MZviewabilityConfigThreshold</key>
+                        <value>vi</value>
+                        <urlEncode>true</urlEncode>
+                        <isRequired>true</isRequired>
+                    </argument>
                 </viewabilityarguments>
             </config>
             <separator>&amp;</separator>

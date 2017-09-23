@@ -11,7 +11,7 @@ import cn.com.mma.mobile.tracking.viewability.origin.sniffer.ViewAbilityConfig;
 
 
 /**
- * Created by admaster on 17/6/15.
+ * Created by mma on 17/6/15.
  */
 public class ViewAbilityService {
 

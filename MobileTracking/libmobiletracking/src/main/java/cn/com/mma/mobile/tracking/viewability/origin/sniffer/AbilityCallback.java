@@ -2,7 +2,7 @@ package cn.com.mma.mobile.tracking.viewability.origin.sniffer;
 
 
 /**
- * Created by admaster on 17/6/19.
+ * Created by mma on 17/6/19.
  */
 public interface AbilityCallback {
 

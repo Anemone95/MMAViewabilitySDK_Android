@@ -52,27 +52,32 @@ public class ViewAbilityExplorer implements Serializable {
 
     private ViewAbilityStatsResult viewAbilityStatsResult;
 
+    private int exposeValidDuration;
 
-    public ViewAbilityExplorer(String adAreaID, String adURL, View adView, String impressionID, ViewAbilityConfig config) {
+
+    public ViewAbilityExplorer(String adAreaID, String adURL, View adView, String impressionID, ViewAbilityConfig config, ViewAbilityStatsResult result) {
         this.adAreaID = adAreaID;
         this.adURL = adURL;
         this.adView = adView;
         this.impressionID = impressionID;
         abilityStatus = AbilityStatus.EXPLORERING;
         this.config = config;
+        viewAbilityStatsResult = result;
         viewFrameBlock = new ViewFrameBlock(config);
         viewFrameBlock.setIsMZURL(isMZURL(adURL)); //mzcommit
+        viewFrameBlock.setUrlCoverRateScale(1-viewAbilityStatsResult.getUrlArea());
         isVisibleAbility = false;
+        if (isMZURL(adURL) && viewAbilityStatsResult.getUrlExposeDuration()>0) {
+            exposeValidDuration = viewAbilityStatsResult.getUrlExposeDuration()*1000;
+        } else {
+            exposeValidDuration = viewAbilityStatsResult.isVideoExpose() ? config.getVideoExposeValidDuration() : config.getExposeValidDuration();
+        }
         //isMeasureAbility = true;
     }
 
 
     public void setAbilityCallback(AbilityCallback abilityCallback) {
         this.abilityCallback = abilityCallback;
-    }
-
-    public void setViewAbilityStatsResult(ViewAbilityStatsResult viewAbilityStatsResult) {
-        this.viewAbilityStatsResult = viewAbilityStatsResult;
     }
 
     public AbilityStatus getAbilityStatus() {
@@ -128,7 +133,7 @@ public class ViewAbilityExplorer implements Serializable {
             KLog.w("ID:" + impressionID + " 已经达到最大监测时长,且当前无曝光,终止定时任务,等待数据上报,max duration:" + viewFrameBlock.getMaxDuration() + "  config duration:" + config.getInspectInterval());
             //isMeasureAbility = true;
             isBreak = true;
-        } else if (viewFrameBlock.getExposeDuration() >= (viewAbilityStatsResult.isVideoExpose() ? config.getVideoExposeValidDuration() : config.getExposeValidDuration())) { // 条件2: 当前曝光时长已经满足曝光上报条件阈值
+        } else if (viewFrameBlock.getExposeDuration() >= exposeValidDuration) { // 条件2: 当前曝光时长已经满足曝光上报条件阈值
             KLog.w("ID:" + impressionID + " 已满足可视曝光时长,终止定时任务,等待数据上报");
             isVisibleAbility = true;
             isBreak = true;
@@ -216,7 +221,7 @@ public class ViewAbilityExplorer implements Serializable {
                 sb.append(separator);
                 sb.append(mzViewabilityThreshold);
                 sb.append(equalizer);
-                sb.append(String.valueOf(viewAbilityStatsResult.isVideoExpose() ? config.getVideoExposeValidDuration() : config.getExposeValidDuration()));
+                sb.append(String.valueOf(exposeValidDuration/1000));
             }
             //mzcommit-加vg参数
             String mzViewabilityVideoPlayType = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_PLAYTYPE);
@@ -298,7 +303,7 @@ public class ViewAbilityExplorer implements Serializable {
         }
 
         //视频中点发请求
-        if (!mzMidOver && (viewFrameBlock.getMaxDuration() >= viewAbilityStatsResult.getVideoDuration()/2)) {
+        if (!mzMidOver && (viewFrameBlock.getMaxDuration() >= (viewAbilityStatsResult.getVideoDuration()/2)*1000)) {
 
             mzMidOver = true;
 
@@ -309,7 +314,7 @@ public class ViewAbilityExplorer implements Serializable {
         }
 
         //视频结束发请求
-        if (!mzEndOver && (viewFrameBlock.getMaxDuration() >= viewAbilityStatsResult.getVideoDuration())) {
+        if (!mzEndOver && (viewFrameBlock.getMaxDuration() >= viewAbilityStatsResult.getVideoDuration()*1000)) {
 
             mzEndOver = true;
 

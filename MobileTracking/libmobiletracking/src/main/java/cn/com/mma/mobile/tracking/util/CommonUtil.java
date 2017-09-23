@@ -101,12 +101,10 @@ public class CommonUtil {
 
 	/**
 	 * 根据正则表达式匹配字符串，并返回结果。匹配格式如下：
-	 * 原网址：http://c.admaster.com.cn/c/a16239,b200293157,c1851,i0,m101,h
-	 * 返回值：http://c.admaster.com.cn
-	 * 
+	 *
 	 * 原网址：http://192.168.2.192:8080/untitled3/test/test/a123,c123,b123
 	 * 返回值：http://192.168.2.192
-	 * 
+	 *
 	 * @param url
 	 * @return
 	 */

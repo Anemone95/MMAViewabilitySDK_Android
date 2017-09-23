@@ -12,7 +12,7 @@ import cn.com.mma.mobile.tracking.viewability.origin.sniffer.ViewFrameSlice;
 
 
 /**
- * Created by admaster on 17/6/26.
+ * Created by mma on 17/6/26.
  */
 public class ViewAbilityStatsResult implements Serializable {
 
@@ -54,6 +54,8 @@ public class ViewAbilityStatsResult implements Serializable {
     public static final String MZ_VIEWABILITY_VIDEO_DURATION = "MZviewabilityVideoDuration";    //vb
     public static final String MZ_VIEWABILITY = "MZviewability";                                //vx
     public static final String MZ_VIEWABILITY_RECORD = "MZviewabilityRecord";                   //va
+    public static final String MZ_VIEWABILITY_CONFIG_THRESHOLD = "MZviewabilityConfigThreshold";    //vi
+    public static final String MZ_VIEWABILITY_CONFIG_AREA = "MZviewabilityConfigArea";              //vh
     public static final String MZ_COMPANY_DOMAIN = ".miaozhen.com";
     /* 存储<viewabilityarguments>标签内所有的属性 */
     private HashMap<String, String> viewabilityarguments;
@@ -69,6 +71,12 @@ public class ViewAbilityStatsResult implements Serializable {
     private int videoPlayType;  //mzcommit-加播放类型：0-无法识别，1-自动，2-手动
 
     private int videoDuration;  //mzcommit-视频广告时长，vb，从url中获取
+
+    private boolean isMZURL;
+
+    private int urlExposeDuration;
+
+    private float urlArea;
 
     public boolean isVideoExpose() {
         return isVideoExpose;
@@ -117,6 +125,26 @@ public class ViewAbilityStatsResult implements Serializable {
 
     public int getVideoDuration() {
         return videoDuration;
+    }
+
+    public void setIsMZURL(boolean isMZURL) {
+        this.isMZURL = isMZURL;
+    }
+
+    public void setUrlExposeDuration(int duration) {
+        this.urlExposeDuration = duration;
+    }
+
+    public int getUrlExposeDuration() {
+        return urlExposeDuration;
+    }
+
+    public void setUrlArea(float area) {
+        this.urlArea = area;
+    }
+
+    public float getUrlArea() {
+        return urlArea;
     }
     //end
 
@@ -193,7 +221,11 @@ public class ViewAbilityStatsResult implements Serializable {
         }
         String vbhide = viewabilityarguments.get(ADVIEWABILITY_HIDE);
         if (!TextUtils.isEmpty(vbhide)) {
-            events.put(vbhide, slice.getHidden());
+            if(isMZURL) {
+                events.put(vbhide, slice.getHidden()==0?1:0);
+            } else {
+                events.put(vbhide, slice.getHidden());
+            }
         }
         String vbrate = viewabilityarguments.get(ADVIEWABILITY_COVERRATE);
         if (!TextUtils.isEmpty(vbrate)) {
