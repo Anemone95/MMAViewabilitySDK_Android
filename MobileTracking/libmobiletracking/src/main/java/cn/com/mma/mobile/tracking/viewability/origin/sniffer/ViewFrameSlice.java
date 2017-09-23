@@ -106,7 +106,7 @@ public class ViewFrameSlice implements Serializable {
             coverRate = (float) Math.round(temp * 100) / 100;
 
             //屏幕是否点亮
-            screenOn = ViewHelper.isScreenOn(adView) ? 1 : 0;
+            screenOn = (ViewHelper.isScreenOn(adView) && adView.hasWindowFocus()) ? 1:0;
 
             Rect selfRect = new Rect();
             adView.getLocalVisibleRect(selfRect);
