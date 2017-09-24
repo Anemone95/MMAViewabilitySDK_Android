@@ -209,6 +209,8 @@ public class ViewAbilityHandler {
             viewAbilityStatsResult.setEqualizer(company.equalizer);
             viewAbilityStatsResult.setViewabilityarguments(company.config.viewabilityarguments);
             viewAbilityStatsResult.setIsMZURL(company.name.equals(Constant.MZ_COMPANY_NAME));
+            viewAbilityStatsResult.setUrlExposeDuration((int)getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_CONFIG_THRESHOLD));
+            viewAbilityStatsResult.setUrlArea(getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_CONFIG_AREA));
 
             //[3]  降噪处理:如果是onclick和onexpose使用arg[1]只清除原链接的2g属性;如果是url/video的ViewAbility使用arg[2]清除2g,2j,2f,2h
             //mzcommit-秒针url使用秒针的过滤函数
@@ -233,8 +235,6 @@ public class ViewAbilityHandler {
                     viewAbilityStatsResult.setVideoExpose(true); //标记当前可视化监测来自视频的ViewAbility
                     viewAbilityStatsResult.setVideoPlayType(videoPlayType); //记录视频播放类型
                     viewAbilityStatsResult.setVideoDuration((int)getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_DURATION));  //从请求中获取视频广告时长，用于中点监测
-                    viewAbilityStatsResult.setUrlExposeDuration((int)getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_CONFIG_THRESHOLD));
-                    viewAbilityStatsResult.setUrlArea(getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_CONFIG_AREA));
             }
 
 

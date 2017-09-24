@@ -60,17 +60,17 @@ public class ViewAbilityExplorer implements Serializable {
         this.adURL = adURL;
         this.adView = adView;
         this.impressionID = impressionID;
-        abilityStatus = AbilityStatus.EXPLORERING;
+        this.abilityStatus = AbilityStatus.EXPLORERING;
         this.config = config;
-        viewAbilityStatsResult = result;
-        viewFrameBlock = new ViewFrameBlock(config);
-        viewFrameBlock.setIsMZURL(isMZURL(adURL)); //mzcommit
-        viewFrameBlock.setUrlCoverRateScale(1-viewAbilityStatsResult.getUrlArea());
-        isVisibleAbility = false;
+        this.viewAbilityStatsResult = result;
+        this.viewFrameBlock = new ViewFrameBlock(config);
+        this.viewFrameBlock.setIsMZURL(isMZURL(adURL)); //mzcommit
+        this.viewFrameBlock.setUrlCoverRateScale(1-viewAbilityStatsResult.getUrlArea());
+        this.isVisibleAbility = false;
         if (isMZURL(adURL) && viewAbilityStatsResult.getUrlExposeDuration()>0) {
-            exposeValidDuration = viewAbilityStatsResult.getUrlExposeDuration()*1000;
+            this.exposeValidDuration = viewAbilityStatsResult.getUrlExposeDuration()*1000;
         } else {
-            exposeValidDuration = viewAbilityStatsResult.isVideoExpose() ? config.getVideoExposeValidDuration() : config.getExposeValidDuration();
+            this.exposeValidDuration = viewAbilityStatsResult.isVideoExpose() ? config.getVideoExposeValidDuration() : config.getExposeValidDuration();
         }
         //isMeasureAbility = true;
     }
@@ -124,6 +124,7 @@ public class ViewAbilityExplorer implements Serializable {
                 if (abilityCallback != null) {
                     abilityCallback.onFinished(adAreaID);
                 }
+                abilityStatus = AbilityStatus.UPLOADED;
             }
             return;
         }
@@ -150,9 +151,10 @@ public class ViewAbilityExplorer implements Serializable {
 
     public void breakToUpload() throws Exception {
 
-
-        abilityStatus = AbilityStatus.WAITINGUPLOAD;
-
+        if (!(isVisibleAbility && !mzEndOver)) {
+            //可见中点监测还没结束时不停止定时器
+            abilityStatus = AbilityStatus.WAITINGUPLOAD;
+        }
         //TODO: 生成MMA 监测链接  上传最近十条 小于十条全部上传
         HashMap<String, Object> params = new HashMap<>();
         List<HashMap<String, Object>> events = viewFrameBlock.generateUploadEvents(viewAbilityStatsResult);
@@ -249,7 +251,10 @@ public class ViewAbilityExplorer implements Serializable {
             }
         }
         KLog.e("<-------------------------------------------------------------------------------->");
-        abilityStatus = AbilityStatus.UPLOADED;
+        if (!(isVisibleAbility && !mzEndOver)) {
+            //可见中点监测还没结束时不停止定时器
+            abilityStatus = AbilityStatus.UPLOADED;
+        }
     }
 
     /**
@@ -317,7 +322,9 @@ public class ViewAbilityExplorer implements Serializable {
         if (!mzEndOver && (viewFrameBlock.getMaxDuration() >= viewAbilityStatsResult.getVideoDuration()*1000)) {
 
             mzEndOver = true;
-
+            if(isVisibleAbility) {
+                abilityStatus = AbilityStatus.WAITINGUPLOAD;
+            }
             if (abilityCallback != null) {
                 String endURL = adURL + viewAbilityStatsResult.getSeparator() + mzVideoProgress + viewAbilityStatsResult.getEqualizer() + "end";
                 abilityCallback.onSend(endURL);
@@ -325,6 +332,7 @@ public class ViewAbilityExplorer implements Serializable {
                 //如果上报过可见数据，中点监测结束还要停止定时器
                 if (isVisibleAbility) {
                     abilityCallback.onFinished(adAreaID);
+                    abilityStatus = AbilityStatus.UPLOADED;
                 }
             }
         }
