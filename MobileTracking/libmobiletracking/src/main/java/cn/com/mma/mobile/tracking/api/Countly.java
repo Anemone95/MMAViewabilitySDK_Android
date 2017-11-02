@@ -133,10 +133,6 @@ public class Countly {
         triggerEvent(EVENT_VIEWABILITY_EXPOSE, adURL, adView);
     }
 
-    public void onVideoExpose(String adURL, View videoView) {
-        onVideoExpose(adURL, videoView, 0);
-    }
-
     /**
      * 可视化视频曝光事件监测接口
      *

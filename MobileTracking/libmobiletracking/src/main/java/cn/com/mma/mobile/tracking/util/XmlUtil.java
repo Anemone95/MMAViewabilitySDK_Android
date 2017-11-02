@@ -73,6 +73,8 @@ public class XmlUtil {
                         sdk.viewAbility.viewabilityFrame = Integer.valueOf(parser.nextText());
                     if (elementName.equals("viewabilityTime"))
                         sdk.viewAbility.viewabilityTime = Integer.valueOf(parser.nextText());
+                    if (elementName.equals("viewabilityVideoTime"))
+                        sdk.viewAbility.viewabilityVideoTime = Integer.valueOf(parser.nextText());
                     if (elementName.equals("maxExpirationSecs"))
                         sdk.viewAbility.maxExpirationSecs = Integer.valueOf(parser.nextText());
                     if (elementName.equals("maxAmount"))
@@ -108,24 +110,20 @@ public class XmlUtil {
 						if ("switch".equals(elementName))
 							company.sswitch = new Switch();
 						if (company.sswitch != null) {
-							if ("isTrackLocation".equals(elementName))
-								company.sswitch.isTrackLocation = Boolean
-										.parseBoolean(parser.nextText());
-							if ("offlineCacheExpiration".equals(elementName))
-								company.sswitch.offlineCacheExpiration = parser
-										.nextText();
-							if ("encrypt".equals(elementName))
-								company.sswitch.encrypt = new HashMap<String, String>();
-							if (company.sswitch.encrypt != null) {
-								if ("MAC".equals(elementName)
-										|| "IDA".equals(elementName)
-										|| "IMEI".equals(elementName)
-										|| "ANDROID".equals(elementName))
-									company.sswitch.encrypt.put(elementName,
-											parser.nextText());
+                            if ("isTrackLocation".equals(elementName))
+                                company.sswitch.isTrackLocation = Boolean.parseBoolean(parser.nextText());
+                            if ("offlineCacheExpiration".equals(elementName))
+                                company.sswitch.offlineCacheExpiration = parser.nextText();
+                            if ("viewabilityTrackPolicy".equals(elementName))
+                                company.sswitch.viewabilityTrackPolicy = Integer.parseInt(parser.nextText());
+                            if ("encrypt".equals(elementName))
+                                company.sswitch.encrypt = new HashMap<>();
+                            if (company.sswitch.encrypt != null) {
+                                if ("MAC".equals(elementName) || "IDA".equals(elementName) || "IMEI".equals(elementName) || "ANDROID".equals(elementName))
+                                    company.sswitch.encrypt.put(elementName, parser.nextText());
 
-							}
-						}
+                            }
+                        }
 
 						if ("config".equals(elementName))
 							company.config = new Config();

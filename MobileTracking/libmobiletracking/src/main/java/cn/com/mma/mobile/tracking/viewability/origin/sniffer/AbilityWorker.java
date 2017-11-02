@@ -11,11 +11,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
 import cn.com.mma.mobile.tracking.api.Countly;
 import cn.com.mma.mobile.tracking.util.klog.KLog;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityEventListener;
-import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStatsResult;
+import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStats;
 
 
 /**
@@ -101,7 +100,7 @@ public class AbilityWorker implements AbilityCallback {
     /**
      * 添加一个工作者
      */
-    public void addWorker(String adURL, View adView, String impressionID, String adAreaID, ViewAbilityStatsResult result) {
+    public void addWorker(String adURL, View adView, String impressionID, String adAreaID, ViewAbilityStats result) {
 
         try {
             ViewAbilityExplorer existExplore = explorers.get(adAreaID);
@@ -125,65 +124,31 @@ public class AbilityWorker implements AbilityCallback {
 
 
     @Override
-    public void onViewAbilityFinished(final String adAreaID, final String abilityURL) {
-
+    public void onSend(final String trackURL) {
         new Thread(new Runnable() {
             @Override
             public void run() {
+
+                mmaSdk.onEventPresent(trackURL);
+                KLog.v(",ID:" + trackURL + "监测完成,移除对应的数据");
 
                 //[LOCALTEST] 测试计数:带ViewAbility曝光事件产生计数
                 if (Countly.LOCAL_TEST) {
                     Intent intent = new Intent(Countly.ACTION_STATS_VIEWABILITY);
                     mContext.sendBroadcast(intent);
                 }
-
-                mmaSdk.onEventPresent(abilityURL);
-                KLog.w(",ID:" + adAreaID + "监测完成,移除对应的数据");
-                //T每次成功上报数据后,都删除CACHE内impressionID对应的Data
-                mCacheManager.removeObject(adAreaID);
-
             }
         }).start();
+
     }
 
-    //mzcommit-中点监测
+
     @Override
-    public void onFinished(final String adAreaID) {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mCacheManager.removeObject(adAreaID);
-            }
-        }).start();
-    }
-    //mzcommit-中点监测
-    @Override
-    public void onSend(final String url) {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mmaSdk.onEventPresent(url);
-            }
-        }).start();
+    public void onFinished(String taskID) {
+        //T每次成功上报数据后,都删除CACHE内impressionID对应的Data
+        mCacheManager.removeObject(taskID);
     }
 
-    //mzcommit-中点监测
-    @Override
-    public void onViewAbilitySend(final String url) {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //TODO [TEST] 测试计数:带ViewAbility曝光事件产生计数
-                Intent intent = new Intent(Countly.ACTION_STATS_VIEWABILITY);
-                mContext.sendBroadcast(intent);
-
-                mmaSdk.onEventPresent(url);
-            }
-        }).start();
-    }
 
     /**
      * 定时器,每隔

@@ -240,29 +240,6 @@ public class DeviceInfoUtil {
         }
         return type;
     }
-	
-	/**
-	 * 按秒针标准返回当前网络的状态
-	 * @param context
-	 * @return
-	 */
-	public static String getCurrentNetTypeMZ(Context context) {
-		String type = "";
-		try {
-			ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo info = cm.getActiveNetworkInfo();
-			if (info == null || !info.isAvailable()) {
-				type = "0";
-			} else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
-				type = "1";
-			} else if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
-					type = "2";
-			}
-		} catch (Exception e) {
-			type = "0";
-		}
-		return type;
-	}
 
 	/**
 	 * 判断当前网络是否可用
@@ -467,7 +444,6 @@ public class DeviceInfoUtil {
 			params.put(Constant.TRACKING_OS_VERION, getOSVersion());
 			params.put(Constant.TRACKING_TERM, getDevice());
 			params.put(Constant.TRACKING_WIFI, isWifi(context));
-			params.put(Constant.TRACKING_NETWORKTYPE, getCurrentNetTypeMZ(context)); //mzcommit-获取网络类型
 			params.put(Constant.TRACKING_NAME, getAppName(context));
 			params.put(Constant.TRACKING_KEY, getPackageName(context));
 

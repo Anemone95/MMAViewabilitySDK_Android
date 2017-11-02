@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">MobileTracking</string>
+    <string name="app_name">MobileTrackingDemo</string>
+    <string name="click">点击</string>
+    <string name="expose">曝光</string>
+    <string name="viewability_expose">可视化曝光</string>
+    <string name="viewability_jsexpose">可视化JS曝光</string>
+    <string name="adView">广告视图</string>
 </resources>

@@ -179,8 +179,8 @@ public class ViewFrameSlice implements Serializable {
      * @return
      */
     public boolean validateAdVisible(float confCoverRate) {
-        //覆盖率<0.5 && 不隐藏 && 不完全透明 && 开屏
-        if (coverRate < confCoverRate && hidden == 0 && alpha > 0.001 && screenOn == 1) {
+        //被覆盖率 <= 0.5 && 不隐藏 && 不完全透明 && 开屏
+        if (coverRate <= confCoverRate && hidden == 0 && alpha > 0.001 && screenOn == 1) {
             visibleAbility = 1;
         } else {
             visibleAbility = 0;

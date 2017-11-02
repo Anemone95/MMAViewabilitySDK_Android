@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import cn.com.mma.mobile.tracking.util.klog.KLog;
-import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStatsResult;
+import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStats;
 
 
 /**
@@ -30,25 +30,28 @@ public class ViewFrameBlock implements Serializable {
     private ViewFrameSlice visibleSlice;
     /*时间轴保存有效时间片的数组序列*/
     private List<ViewFrameSlice> framesList;
-    /*从配置文件读取全局配置参数*/
-    private ViewAbilityConfig config;
+    /*最大上报数量*/
+    private int maxAmount;
 
     //mzcommit-记录上一次slice的可见判定结果
     private boolean prevIsVisibleSlice = false;
-    private boolean isMZURL = false;
+
+    /* 视图被覆盖比率*/
     private float urlCoverRateScale;
 
-    //mzcommit
-    public void setIsMZURL(boolean isMZURL) {
-        this.isMZURL = isMZURL;
-    }
+    /* 可视化采集收集策略: 0=TrackPositionChanged,1=TrackVisibleChanged*/
+    private int trackPolicy;
 
-    public void setUrlCoverRateScale(float rate) {
-        this.urlCoverRateScale = rate;
-    }
-
-    public ViewFrameBlock(ViewAbilityConfig config) {
-        this.config = config;
+    /**
+     *
+     * @param trackPolicy 采集策略
+     * @param maxAmount 最大上报
+     * @param coverRate 被覆盖比率
+     */
+    public ViewFrameBlock(int trackPolicy,int maxAmount,float coverRate) {
+        this.trackPolicy = trackPolicy;
+        this.maxAmount = maxAmount;
+        urlCoverRateScale = coverRate;
         exposeDuration = 0;
         maxDuration = 0;
         framesList = new ArrayList<>();
@@ -85,9 +88,9 @@ public class ViewFrameBlock implements Serializable {
             framesList.add(slice);
             KLog.d("当前帧压入时间轴序列:" + slice.toString());
 
-            //TODO 每次超过max uploadAmount时,移除数组内初始元素,保持数组长度为Max之内
+            //每次超过max uploadAmount时,移除数组内初始元素,保持数组长度为Max之内
             int count = framesList.size();
-            if (count > config.getMaxUploadAmount()) {
+            if (count > maxAmount) {
                 framesList.remove(0);
             }
         }
@@ -96,13 +99,7 @@ public class ViewFrameBlock implements Serializable {
         lastSlice = slice;
 
         //当前是可见有效帧,统计曝光时长(非累加时长:上一次可见---到本次可见为有效时间)
-        float coverRate;
-        if (isMZURL && urlCoverRateScale > 0 && urlCoverRateScale < 1) {
-            coverRate = urlCoverRateScale;
-        } else {
-            coverRate = config.getCoverRateScale();
-        }
-        boolean visible = slice.validateAdVisible(coverRate);
+        boolean visible = slice.validateAdVisible(urlCoverRateScale);
         if (visible) {
             //如果时间轴内可见有效时间片不存在
             if (visibleSlice == null) {
@@ -135,15 +132,10 @@ public class ViewFrameBlock implements Serializable {
         //如果nextPoint不存在.则直接验证通过
         if (lastSlice == null) return true;
 
-        if (isMZURL) {
-            float coverRate;
-            if (urlCoverRateScale > 0 && urlCoverRateScale < 1) {
-                coverRate = urlCoverRateScale;
-            } else {
-                coverRate = config.getCoverRateScale();
-            }
+        //1=TrackVisibleChanged状态变化时记录,0=TrackPositionChanged位置变化时记录
+        if (trackPolicy == 1) {
             //mzcommit-如果是miaozhen的url，把状态变化时的slice压入时间轴
-            return prevIsVisibleSlice != currentSlice.validateAdVisible(coverRate);
+            return prevIsVisibleSlice != currentSlice.validateAdVisible(urlCoverRateScale);
         } else {
             //如果与时间轴内最后一条数据相同,则验证不通过(本次不需要记录)
             if (lastSlice.isSameAs(currentSlice)) return false;
@@ -162,7 +154,7 @@ public class ViewFrameBlock implements Serializable {
      *
      * @return
      */
-    public List<HashMap<String, Object>> generateUploadEvents(ViewAbilityStatsResult vaResult) {
+    public List<HashMap<String, Object>> generateUploadEvents(ViewAbilityStats vaResult) {
 
         List<HashMap<String, Object>> arrs = new ArrayList<>();
         try {
@@ -176,17 +168,17 @@ public class ViewFrameBlock implements Serializable {
             int maxLen = framesList.size();
             int startIndex = 0;
             //如果采集点长度大于max,则取采集点最后max长度的内容组装
-            if (maxLen > config.getMaxUploadAmount()) {
-                startIndex = maxLen - config.getMaxUploadAmount();
+            if (maxLen > maxAmount) {
+                startIndex = maxLen - maxAmount;
             }
 
             for (; startIndex < maxLen; startIndex++) {
                 ViewFrameSlice itemSlice = framesList.get(startIndex);
-                HashMap<String, Object> dict = vaResult.getViewAbilityEvents(itemSlice);
+                HashMap<String, Object> dict = vaResult.getAbilitySliceTrackEvents(itemSlice);
                 arrs.add(dict);
             }
 
-            KLog.v("原始帧长度:" + framesList.size() + "  MaxAmount:" + config.getMaxUploadAmount() + "  截取点:" + startIndex + "  上传长度:" + arrs.size());
+            KLog.v("原始帧长度:" + framesList.size() + "  MaxAmount:" + maxAmount + "  截取点:" + startIndex + "  上传长度:" + arrs.size());
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -20,7 +20,7 @@ public class ViewAbilityConfig implements Serializable {
     private int inspectInterval;
     /* 数据帧最大上报数量 范围0-999*/
     private int maxUploadAmount;
-    /*AD视图覆盖率 范围 0.0-1.0 [配置文件为百分比]*/
+    /*AD视图被覆盖率 范围 0.0-1.0*/
     private float coverRateScale;
 
 
@@ -31,7 +31,7 @@ public class ViewAbilityConfig implements Serializable {
         videoExposeValidDuration = 2 * 1000;//视频最大曝光默认2s
         inspectInterval = 100;//默认间隔100ms
         maxUploadAmount = 10;//默认最大上报数量为10
-        coverRateScale = 0.5f;//覆盖率默认50%
+        coverRateScale = 0.5f;//被覆盖率默认50%
 
     }
 
@@ -41,12 +41,12 @@ public class ViewAbilityConfig implements Serializable {
     }
 
     /**
-     * 满足viewability可见区域占总区域的百分比
+     * 视图被遮盖率,监测过程中使用被覆盖率计算
      *
-     * @param coverRateScale 单位为百分比数字
+     * @param coverRateScale 被覆盖比例
      */
-    public void setCoverRateScale(int coverRateScale) {
-        this.coverRateScale = coverRateScale / 100.0f;
+    public void setCoverRateScale(float coverRateScale) {
+        this.coverRateScale = coverRateScale;
     }
 
     /**

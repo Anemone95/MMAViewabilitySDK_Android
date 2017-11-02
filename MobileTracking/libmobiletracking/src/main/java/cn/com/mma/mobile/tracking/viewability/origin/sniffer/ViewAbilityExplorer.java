@@ -3,16 +3,18 @@ package cn.com.mma.mobile.tracking.viewability.origin.sniffer;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 
-import cn.com.mma.mobile.tracking.util.CommonUtil;
+import cn.com.mma.mobile.tracking.api.Countly;
 import cn.com.mma.mobile.tracking.util.klog.KLog;
-import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStatsResult;
+import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStats;
 
 
 /**
@@ -38,41 +40,83 @@ public class ViewAbilityExplorer implements Serializable {
     public ViewFrameBlock viewFrameBlock = null;
     /*配置*/
     private ViewAbilityConfig config;
-    /*结合所有参数判断adView是否可视化 0=不可见 1=可见*/
-    private boolean isVisibleAbility;
 
-    //mzcommit-中点监测
-    private boolean mzMidOver = false;
-    private boolean mzEndOver = false;
-    private String mzVideoProgress = null;
+    private boolean viewabilityState = false;//是否满足可视
+
+    /* 是否要进行视频可视化中点监测 */
+    private boolean isVideoProcessMonitor = false;
+    /* 是否上报可视化数据 */
+    private boolean isNeedRecord = true;
+    /* 视频可视监测进度列表*/
+    private List<AbilityVideoProgress> videoProgressList;
+    /* 视频可视进度监测标识符*/
+    private String videoProcessIdentifier = null;
+    /* 是否正在视频进度监测*/
+    private boolean isVideoProcessTracking = false;
+
+    /* 可视监测是否完成*/
+    private boolean isViewabilityTrackFinished = false;
+
     /*结合所有参数判断adView是否可视化 0=不可见 1=可见*/
     //private boolean isMeasureAbility;
 
     private transient AbilityCallback abilityCallback = null;
 
-    private ViewAbilityStatsResult viewAbilityStatsResult;
+    private ViewAbilityStats viewAbilityStats;
 
+    /* 当前监测满足可视曝光时长 从URL中获取,缺省使用config */
     private int exposeValidDuration;
 
 
-    public ViewAbilityExplorer(String adAreaID, String adURL, View adView, String impressionID, ViewAbilityConfig config, ViewAbilityStatsResult result) {
+    public ViewAbilityExplorer(String adAreaID, String adURL, View adView, String impressionID, ViewAbilityConfig config, ViewAbilityStats result) {
         this.adAreaID = adAreaID;
         this.adURL = adURL;
         this.adView = adView;
         this.impressionID = impressionID;
         this.abilityStatus = AbilityStatus.EXPLORERING;
         this.config = config;
-        this.viewAbilityStatsResult = result;
-        this.viewFrameBlock = new ViewFrameBlock(config);
-        this.viewFrameBlock.setIsMZURL(isMZURL(adURL)); //mzcommit
-        this.viewFrameBlock.setUrlCoverRateScale(1-viewAbilityStatsResult.getUrlArea());
-        this.isVisibleAbility = false;
-        if (isMZURL(adURL) && viewAbilityStatsResult.getUrlExposeDuration()>0) {
-            this.exposeValidDuration = viewAbilityStatsResult.getUrlExposeDuration()*1000;
-        } else {
-            this.exposeValidDuration = viewAbilityStatsResult.isVideoExpose() ? config.getVideoExposeValidDuration() : config.getExposeValidDuration();
+        this.viewAbilityStats = result;
+
+        //如果监测链接没有动态配置满足可视覆盖比率,使用默认Config的配置
+        float coverRate = 1 - viewAbilityStats.getURLShowCoverRate(); //URL动态配置的是可见覆盖比率,计算时使用的是被覆盖比率,为保持统一,在使用时统一使用后者
+        if (coverRate <= 0) {
+            coverRate = config.getCoverRateScale();
         }
-        //isMeasureAbility = true;
+        this.viewFrameBlock = new ViewFrameBlock(result.getViewabilityTrackPolicy(), config.getMaxUploadAmount(), coverRate);
+        initConfigParams();
+    }
+
+    private void initConfigParams() {
+        try {
+            //如果监测链接没有动态配置满足可视时长,使用默认Config的配置
+            if (viewAbilityStats.getURLExposeDuration() > 0) {
+                this.exposeValidDuration = viewAbilityStats.getURLExposeDuration();//URL获取到单位为秒,转化为毫秒
+            } else {
+                this.exposeValidDuration = viewAbilityStats.isVideoExpose() ? config.getVideoExposeValidDuration() : config.getExposeValidDuration();
+            }
+
+            String videoProgressArgument = viewAbilityStats.get(ViewAbilityStats.ADVIEWABILITY_VIDEO_PROGRESS);
+            //判断是否进行视频播放进度监测 条件1:视频可视化监测 && 条件2:视频播放时长>0 && 条件3:有配置视频进度监测点 && 条件4:有配置视频进度上报参数
+            if (viewAbilityStats.isVideoExpose() && viewAbilityStats.getURLVideoDuration() > 0 && viewAbilityStats.isVideoProgressTrack() && !TextUtils.isEmpty(videoProgressArgument)) {
+                isVideoProcessMonitor = true;
+                videoProgressList = viewAbilityStats.getURLVideoProcessTrackList();
+                videoProcessIdentifier = videoProgressArgument;
+            } else {
+                isVideoProcessMonitor = false;
+            }
+
+            //从原始链接动态提取是否上报监测轨迹,默认收集上报
+            String needRecord = viewAbilityStats.get(ViewAbilityStats.ADVIEWABILITY_RECORD);
+            if (!TextUtils.isEmpty(needRecord)) {
+                String key = viewAbilityStats.getSeparator() + needRecord + viewAbilityStats.getEqualizer() + "0";
+                if (adURL.contains(key)) {
+                    isNeedRecord = false;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -91,11 +135,15 @@ public class ViewAbilityExplorer implements Serializable {
     public void onExplore(Context context) {
         try {
             synchronized (ViewAbilityExplorer.class) {
+
                 //如果继续持有AdView的引用,开启监测并
                 if (adView != null) {
                     ViewFrameSlice itemSlice = new ViewFrameSlice(adView, context);
                     viewFrameBlock.onPush(itemSlice);
                 }
+
+                //开启视频进度监测
+                if (isVideoProcessMonitor && videoProgressList.size() > 0) trackVideoProgress();
                 //验证是否停需要上报数据
                 verifyBreakCondition();
             }
@@ -109,25 +157,12 @@ public class ViewAbilityExplorer implements Serializable {
      */
     private void verifyBreakCondition() throws Exception {
 
-        boolean isBreak = false;
-
-        //mzcommit-满足条件进行中点监测，否则把mzEndOver置成true，走普通的数据上报流程
-        if (viewAbilityStatsResult.isVideoExpose() && viewAbilityStatsResult.getVideoDuration() > 0) {
-            mzMidPointVerifyUpload();
-        } else  {
-            mzEndOver = true;
-        }
-
-        //mzcommit-如果已经上报过可见数据了，则只进行中点监测，不再重复上报数据，等超时或view释放停止监测
-        if (isVisibleAbility) {
-            if (viewFrameBlock.getMaxDuration() >= config.getMaxDuration() || adView == null) {
-                if (abilityCallback != null) {
-                    abilityCallback.onFinished(adAreaID);
-                }
-                abilityStatus = AbilityStatus.UPLOADED;
-            }
+        if (isViewabilityTrackFinished) {
+            //abilityCallback.onFinished(adAreaID);
             return;
         }
+
+        boolean isBreak = false;
 
         //条件1: 达到曝光最大时长并且当前广告无曝光
         if (viewFrameBlock.getMaxDuration() >= config.getMaxDuration() && viewFrameBlock.getExposeDuration() < 0.001) {
@@ -136,7 +171,7 @@ public class ViewAbilityExplorer implements Serializable {
             isBreak = true;
         } else if (viewFrameBlock.getExposeDuration() >= exposeValidDuration) { // 条件2: 当前曝光时长已经满足曝光上报条件阈值
             KLog.w("ID:" + impressionID + " 已满足可视曝光时长,终止定时任务,等待数据上报");
-            isVisibleAbility = true;
+            viewabilityState = true;
             isBreak = true;
             //isMeasureAbility = true;
         } else if (adView == null) { // 条件3: AdView 释放满足上报条件
@@ -151,110 +186,86 @@ public class ViewAbilityExplorer implements Serializable {
 
     public void breakToUpload() throws Exception {
 
-        if (!(isVisibleAbility && !mzEndOver)) {
-            //可见中点监测还没结束时不停止定时器
-            abilityStatus = AbilityStatus.WAITINGUPLOAD;
+        List<HashMap<String, Object>> events = viewFrameBlock.generateUploadEvents(viewAbilityStats);
+
+        if (Countly.LOCAL_TEST) {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put(viewAbilityStats.IMPRESSIONID, impressionID);
+            params.put(viewAbilityStats.ADVIEWABILITYEVENTS, events);
+            params.put(viewAbilityStats.ADVIEWABILITY, viewabilityState ? 1 : 0);
+            params.put(viewAbilityStats.ADMEASURABILITY, 1);
+
+            JSONObject jsonObject = new JSONObject(params);
+            KLog.e("<-------------------------------------------------------------------------------->");
+            KLog.d("ID:" + impressionID + " 原始数据帧长度:" + viewFrameBlock.blockLength() + " 准备生成MMA监测链接");
+            KLog.json(jsonObject.toString());
         }
-        //TODO: 生成MMA 监测链接  上传最近十条 小于十条全部上传
-        HashMap<String, Object> params = new HashMap<>();
-        List<HashMap<String, Object>> events = viewFrameBlock.generateUploadEvents(viewAbilityStatsResult);
 
-        params.put(viewAbilityStatsResult.IMPRESSIONID, impressionID);
-        params.put(viewAbilityStatsResult.ADVIEWABILITYEVENTS, events);
-        params.put(viewAbilityStatsResult.ADVIEWABILITY, isVisibleAbility ? 1 : 0);
-        params.put(viewAbilityStatsResult.ADMEASURABILITY, 1);
-
-        JSONObject jsonObject = new JSONObject(params);
-        KLog.e("<-------------------------------------------------------------------------------->");
-        KLog.d("ID:" + impressionID + " 原始数据帧长度:" + viewFrameBlock.blockLength() + " 准备生成MMA监测链接");
-        KLog.json(jsonObject.toString());
-
-        String abilityURL;
         StringBuilder sb = new StringBuilder();
         sb.append(adURL);
-
-        boolean isMiaozhen = isMZURL(adURL);    //mzcommit
 
         try {
             JSONArray jsonArray = new JSONArray(events);
             //[]内可视化数据移除所有的引号,并且整体Encode处理
             String repArr = jsonArray.toString().replace("\"", "");
-            String separator = viewAbilityStatsResult.getSeparator();
-            String equalizer = viewAbilityStatsResult.getEqualizer();
+            String separator = viewAbilityStats.getSeparator();
+            String equalizer = viewAbilityStats.getEqualizer();
 
-            String eventsArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITYEVENTS);
-            if (!TextUtils.isEmpty(eventsArgument)) {
-                //mzcommit-如果不是miaozhen直接记录，如果是miaozhen需要url中配置va=1才记录
-                if( !isMiaozhen || (isMiaozhen && isNeedRecord(adURL))) {
-                	sb.append(separator);
-                	sb.append(eventsArgument);
-                	sb.append(equalizer);
-                	sb.append(URLEncoder.encode(repArr, "utf-8"));
-				}
+            //行为轨迹数据
+            String eventsArgument = viewAbilityStats.get(ViewAbilityStats.ADVIEWABILITYEVENTS);
+            if (!TextUtils.isEmpty(eventsArgument) && isNeedRecord) {
+                sb.append(separator);
+                sb.append(eventsArgument);
+                sb.append(equalizer);
+                sb.append(URLEncoder.encode(repArr, "utf-8"));
             }
 
-            String abilityArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADVIEWABILITY);
+            //是否可视
+            String abilityArgument = viewAbilityStats.get(ViewAbilityStats.ADVIEWABILITY);
             if (!TextUtils.isEmpty(abilityArgument)) {
                 sb.append(separator);
                 sb.append(abilityArgument);
                 sb.append(equalizer);
-                sb.append(String.valueOf(isVisibleAbility ? 1 : 0));
+                sb.append(String.valueOf(viewabilityState ? 1 : 0));
             }
-            String measureArgument = viewAbilityStatsResult.get(ViewAbilityStatsResult.ADMEASURABILITY);
+
+            //是否可测量
+            String measureArgument = viewAbilityStats.get(ViewAbilityStats.ADMEASURABILITY);
             if (!TextUtils.isEmpty(measureArgument)) {
                 sb.append(separator);
                 sb.append(measureArgument);
                 sb.append(equalizer);
-                //如果ViewAbility监测已经到了组装数据的环节,默认MeasureAbility = true
-                sb.append("1");
+                sb.append("1");//如果成功开启可视监测,MeasureAbility即为true
             }
 
-            //mzcommit-加vx参数
-            String mzViewability = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY);
-            if (!TextUtils.isEmpty(mzViewability)) {
+            //视频播放类型,只有视频可视监测才会回传
+            String videoTypeArgument = viewAbilityStats.get(ViewAbilityStats.ADVIEWABILITY_VIDEO_PLAYTYPE);
+            if (!TextUtils.isEmpty(videoTypeArgument) && viewAbilityStats.isVideoExpose()) {
                 sb.append(separator);
-                sb.append(mzViewability);
+                sb.append(videoTypeArgument);
                 sb.append(equalizer);
-                sb.append(String.valueOf(isVisibleAbility ? 1 : 4));
-            }
-            //mzcommit-加ve参数
-            String mzViewabilityThreshold = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_THRESHOLD);
-            if (!TextUtils.isEmpty(mzViewabilityThreshold)) {
-                sb.append(separator);
-                sb.append(mzViewabilityThreshold);
-                sb.append(equalizer);
-                sb.append(String.valueOf(exposeValidDuration/1000));
-            }
-            //mzcommit-加vg参数
-            String mzViewabilityVideoPlayType = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_PLAYTYPE);
-            if (!TextUtils.isEmpty(mzViewabilityVideoPlayType)) {
-                sb.append(separator);
-                sb.append(mzViewabilityVideoPlayType);
-                sb.append(equalizer);
-                sb.append(String.valueOf(viewAbilityStatsResult.getVideoPlayType()));
+                sb.append(String.valueOf(viewAbilityStats.getVideoPlayType()));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //sb.append(viewAbilityStatsResult.getRedirectURL()); //fix：普通请求已经带跳转地址进行过一次跳转，可见请求不应该再进行跳转
-        abilityURL = sb.toString();
 
-        KLog.d("最终监测链接:" + abilityURL);
+        String trackURL = sb.toString();
 
-        //TODO 回调给AbilityWorker,使用MMASDK执行曝光操作
-        if (abilityCallback != null) {
-            //mzcommit-可见请求，中点监测还没结束，先把可见数据上报，但不停止定时器
-            if (isVisibleAbility && !mzEndOver) {
-                abilityCallback.onViewAbilitySend(abilityURL);
-            } else {
-                abilityCallback.onViewAbilityFinished(adAreaID, abilityURL);
-            }
-        }
-        KLog.e("<-------------------------------------------------------------------------------->");
-        if (!(isVisibleAbility && !mzEndOver)) {
-            //可见中点监测还没结束时不停止定时器
+        KLog.d("最终监测链接:" + trackURL);
+
+
+        isViewabilityTrackFinished = true;
+
+        if (abilityCallback != null) abilityCallback.onSend(trackURL);
+
+        //如果没有视频进度监测,移除任务
+        if (!isVideoProcessMonitor || !isVideoProcessTracking) {
+            abilityCallback.onFinished(adAreaID);
             abilityStatus = AbilityStatus.UPLOADED;
         }
+        KLog.e("<-------------------------------------------------------------------------------->");
+
     }
 
     /**
@@ -275,65 +286,52 @@ public class ViewAbilityExplorer implements Serializable {
         return "[ impressionID=" + impressionID + ",adAreaID=" + adAreaID + ",adURL=" + adURL + ",view=" + adView + " block=" + viewFrameBlock.toString() + " ]";
     }
 
-    //mzcommit-判断是不是miaozhen的url
-    private boolean isMZURL(String url) {
-        try {
-            String host = CommonUtil.getHostURL(url);
-            return host.endsWith(ViewAbilityStatsResult.MZ_COMPANY_DOMAIN);
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
-    //mzcommit-从url中取va，va=1记录状态信息
-    private boolean isNeedRecord(String url) {
-        String mzViewabilityRecord = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_RECORD);
-        return !TextUtils.isEmpty(mzViewabilityRecord)
-                && url.contains(viewAbilityStatsResult.getSeparator() + mzViewabilityRecord + viewAbilityStatsResult.getEqualizer() + "1");
-    }
+    /**
+     * 视频播放轨迹监测
+     */
+    private void trackVideoProgress() {
 
-    //mzcommit-中点监测
-    private void mzMidPointVerifyUpload() {
-        if (mzEndOver) {
-            return;
-        }
+        synchronized (ViewAbilityExplorer.class) {
 
-        //取vc参数
-        if (mzVideoProgress == null) {
-            mzVideoProgress = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_PROGRESS);
-            if (TextUtils.isEmpty(mzVideoProgress)) {
-                mzEndOver = true;
-                return;
+            isVideoProcessTracking = true;
+            AbilityVideoProgress trackType = videoProgressList.get(0);
+
+            long processTime = 0;
+            int quarter = viewAbilityStats.getURLVideoDuration() / 4;
+
+            if (trackType == AbilityVideoProgress.TRACK1_4) {
+                processTime = quarter;
+            } else if (trackType == AbilityVideoProgress.TRACK2_4) {
+                processTime = quarter * 2;
+            } else if (trackType == AbilityVideoProgress.TRACK3_4) {
+                processTime = quarter * 3;
+            } else if (trackType == AbilityVideoProgress.TRACK4_4) {
+                processTime = quarter * 4;
             }
-        }
 
-        //视频中点发请求
-        if (!mzMidOver && (viewFrameBlock.getMaxDuration() >= (viewAbilityStatsResult.getVideoDuration()/2)*1000)) {
 
-            mzMidOver = true;
+            //使用总监测时长判断Video进度监测
+            if (viewFrameBlock.getMaxDuration() >= processTime) {
 
-            if (abilityCallback != null) {
-                String midURL = adURL + viewAbilityStatsResult.getSeparator() + mzVideoProgress + viewAbilityStatsResult.getEqualizer() + "mid";
-                abilityCallback.onSend(midURL);
-            }
-        }
-
-        //视频结束发请求
-        if (!mzEndOver && (viewFrameBlock.getMaxDuration() >= viewAbilityStatsResult.getVideoDuration()*1000)) {
-
-            mzEndOver = true;
-            if(isVisibleAbility) {
-                abilityStatus = AbilityStatus.WAITINGUPLOAD;
-            }
-            if (abilityCallback != null) {
-                String endURL = adURL + viewAbilityStatsResult.getSeparator() + mzVideoProgress + viewAbilityStatsResult.getEqualizer() + "end";
-                abilityCallback.onSend(endURL);
-
-                //如果上报过可见数据，中点监测结束还要停止定时器
-                if (isVisibleAbility) {
-                    abilityCallback.onFinished(adAreaID);
-                    abilityStatus = AbilityStatus.UPLOADED;
+                //触发视频进度监测
+                if (abilityCallback != null) {
+                    //adURL + separator + identifier + equalizer + process
+                    String processURL = adURL + viewAbilityStats.getSeparator() + videoProcessIdentifier + viewAbilityStats.getEqualizer() + trackType.value();
+                    abilityCallback.onSend(processURL);
                 }
+                videoProgressList.remove(trackType);
+            }
+
+            //最后一个点监测完成后移除任务
+            if (videoProgressList.size() == 0 || adView == null) {
+
+                isVideoProcessTracking = false;
+                if (isViewabilityTrackFinished && abilityCallback != null) {
+                    abilityStatus = AbilityStatus.UPLOADED;
+                    abilityCallback.onFinished(adAreaID);
+                }
+
             }
         }
     }

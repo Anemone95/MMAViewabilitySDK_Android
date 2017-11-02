@@ -4,12 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import cn.com.mma.mobile.tracking.bean.Argument;
 import cn.com.mma.mobile.tracking.bean.Company;
 import cn.com.mma.mobile.tracking.bean.SDK;
@@ -20,7 +18,7 @@ import cn.com.mma.mobile.tracking.util.SdkConfigUpdateUtil;
 import cn.com.mma.mobile.tracking.util.klog.KLog;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityEventListener;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityService;
-import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStatsResult;
+import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStats;
 import cn.com.mma.mobile.tracking.viewability.origin.sniffer.ViewAbilityConfig;
 import cn.com.mma.mobile.tracking.viewability.webjs.ViewAbilityJsService;
 
@@ -38,7 +36,6 @@ public class ViewAbilityHandler {
         VIDEOEXPOSEWITHABILITY
     }
 
-
     private Context context;
     /* 到MMASDK执行事件监测和上报的回调函数 */
     private ViewAbilityEventListener mmaSdkCallback;
@@ -47,6 +44,9 @@ public class ViewAbilityHandler {
 
     /* sdkconfig.xml配置文件实体映射类 */
     private SDK sdkConfig;
+
+    private ViewAbilityConfig abilityConfig;
+
     /* ViewAbility native 方式监测服务 */
     private ViewAbilityService viewAbilityService;
     /* ViewAbility JS 方式监测服务 */
@@ -60,12 +60,44 @@ public class ViewAbilityHandler {
 
         if (sdkConfig == null) sdkConfig = SdkConfigUpdateUtil.getSdk(context);
 
-        viewAbilityService = new ViewAbilityService(context, mmaSdkCallback, initViewAbilityGlobalConfig());
+        abilityConfig = initViewAbilityGlobalConfig();
+        viewAbilityService = new ViewAbilityService(context, mmaSdkCallback, abilityConfig);
 
         viewAbilityJsService = new ViewAbilityJsService(context, sdkConfig);
     }
 
+    private ViewAbilityConfig initViewAbilityGlobalConfig() {
 
+        ViewAbilityConfig config = new ViewAbilityConfig();
+        try {
+            if (sdkConfig != null && sdkConfig.viewAbility != null) {
+                //viewability曝光监测时间间隔
+                config.setInspectInterval(sdkConfig.viewAbility.intervalTime);
+                //满足viewability曝光持续时长
+                config.setExposeValidDuration(sdkConfig.viewAbility.viewabilityTime);
+                //config内配置的是可见比率(int),计算时使用的是被覆盖比率,为保持统一,在使用时统一使用后者
+                float showCoverRate = sdkConfig.viewAbility.viewabilityFrame / 100.0f;
+                config.setCoverRateScale(1 - showCoverRate);
+                //最大监测时长
+                config.setMaxDuration(sdkConfig.viewAbility.maxExpirationSecs);
+                //最大上报数量
+                config.setMaxUploadAmount(sdkConfig.viewAbility.maxAmount);
+                //最大满足ViewAbility 视频曝光持续时长
+                config.setVideoExposeValidDuration(sdkConfig.viewAbility.viewabilityVideoTime);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return config;
+    }
+
+
+    /**
+     * JS可视监测
+     * @param adURL
+     * @param adView
+     * @param isVideo
+     */
     public void onJSExpose(String adURL, View adView, boolean isVideo) {
 
         //Company为空,不监测
@@ -82,96 +114,64 @@ public class ViewAbilityHandler {
 
     /**
      * 普通点击监测
+     * AdView=NULL,VideoType=0
      *
      * @param originUrl
      */
     public void onClick(String originUrl) {
-        handlerOriginURL(originUrl, MonitorType.CLICK, null);
+        handlerOriginURL(originUrl, MonitorType.CLICK, null, 0);
     }
 
     /**
      * 普通曝光监测
+     * AdView=NULL,VideoType=0
      *
      * @param originUrl
      */
     public void onExpose(String originUrl) {
-        //this.onExpose(originUrl, null);
-        handlerOriginURL(originUrl, MonitorType.EXPOSE, null);
+        handlerOriginURL(originUrl, MonitorType.EXPOSE, null, 0);
     }
 
     /**
-     * 带可视化的曝光监测
+     * Banner可视化监测
+     * VideoType=0
      *
      * @param originUrl
      * @param adView
      */
     public void onExpose(String originUrl, View adView) {
-        handlerOriginURL(originUrl, MonitorType.EXPOSEWITHABILITY, adView);
+        handlerOriginURL(originUrl, MonitorType.EXPOSEWITHABILITY, adView, 0);
     }
 
 
     /**
-         * 带可视化的视频曝光监测
-         *
-         * @param originUrl
-         * @param videoView
-         * @param videoPlayType 传视频播放类型，1-自动播放，2-手动播放，0-无法识别
-         */
+     * Video可视化监测
+     *
+     * @param originUrl
+     * @param videoView
+     * @param videoPlayType 传视频播放类型，1-自动播放，2-手动播放，0-无法识别
+     */
     public void onVideoExpose(String originUrl, View videoView, int videoPlayType) {
         handlerOriginURL(originUrl, MonitorType.VIDEOEXPOSEWITHABILITY, videoView, videoPlayType);
     }
 
 
-    private ViewAbilityConfig initViewAbilityGlobalConfig() {
-
-        ViewAbilityConfig config = new ViewAbilityConfig();
-        try {
-            if (sdkConfig != null && sdkConfig.viewAbility != null) {
-                //viewability曝光监测时间间隔
-                config.setInspectInterval(sdkConfig.viewAbility.intervalTime);
-                //满足viewability曝光持续时长
-                config.setExposeValidDuration(sdkConfig.viewAbility.viewabilityTime);
-                //满足viewability可见区域占总区域的百分比
-                config.setCoverRateScale(sdkConfig.viewAbility.viewabilityFrame);
-                //最大监测时长
-                config.setMaxDuration(sdkConfig.viewAbility.maxExpirationSecs);
-                //最大上报数量
-                config.setMaxUploadAmount(sdkConfig.viewAbility.maxAmount);
-                //最大满足ViewAbility 视频曝光持续时长
-                config.setVideoExposeValidDuration(sdkConfig.viewAbility.viewabilityVideoTime);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return config;
-    }
-
-
-    private void handlerOriginURL(String originUrl, MonitorType monitorType, View adView) {
-        handlerOriginURL(originUrl, monitorType, adView, 0);
-    }
-
 
     private void handlerOriginURL(String originUrl, MonitorType monitorType, View adView, int videoPlayType) {
 
 
-        //Company为空,不监测
+        //Company为空,无法监测
         Company company = getCompany(originUrl);
         if (company == null) {
             Logger.w("监测链接:" + originUrl + " 没有对应的配置项,请检查sdkconfig.xml是否存在链接域名对应的Company配置!");
             return;
         }
 
-        //u=
-        String redirectPrefix = getRedirectIdentifier(company) + company.equalizer;
         //[1] 截取出原监测链接u参数之后所有的内容 REDIRECTURL
+        String redirectPrefix = getRedirectIdentifier(company) + company.equalizer;
         String redirectStr = "";
-
-        //,u=.*
-        String patternStr = company.separator + redirectPrefix + ".*";
-
+        String patternStr = company.separator + redirectPrefix + ".*"; //,u=.*
         Pattern pattern = Pattern.compile(patternStr);
-
         Matcher matcher = pattern.matcher(originUrl);
         if (matcher.find()) {
             redirectStr = matcher.group(0);
@@ -181,10 +181,9 @@ public class ViewAbilityHandler {
         //[2] 监测链接截取掉REDIRECTURL字段之后的所有内容,重新组装为withoutRedirectURL
         String withoutRedirectURL;
         StringBuilder sb = new StringBuilder();
-        String[] splits = originUrl.split(company.separator);
         try {
+            String[] splits = originUrl.split(company.separator);
             for (String item : splits) {
-
                 //如果遇到redirect标识,之后的内容都移除掉
                 if (item.startsWith(redirectPrefix)) {
                     break;
@@ -200,119 +199,107 @@ public class ViewAbilityHandler {
             withoutRedirectURL = originUrl;
         }
 
-
+        StringBuffer exposeURL = new StringBuffer();
         try {
 
-            //ViewAbilityStatsResult初始化,将配置文件的arguments映射到HashMap
-            ViewAbilityStatsResult viewAbilityStatsResult = new ViewAbilityStatsResult();
-            viewAbilityStatsResult.setSeparator(company.separator);
-            viewAbilityStatsResult.setEqualizer(company.equalizer);
-            viewAbilityStatsResult.setViewabilityarguments(company.config.viewabilityarguments);
-            viewAbilityStatsResult.setIsMZURL(company.name.equals(Constant.MZ_COMPANY_NAME));
-            viewAbilityStatsResult.setUrlExposeDuration((int)getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_CONFIG_THRESHOLD));
-            viewAbilityStatsResult.setUrlArea(getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_CONFIG_AREA));
-
-            //[3]  降噪处理:如果是onclick和onexpose使用arg[1]只清除原链接的2g属性;如果是url/video的ViewAbility使用arg[2]清除2g,2j,2f,2h
-            //mzcommit-秒针url使用秒针的过滤函数
-            String[] args;
-            if (!TextUtils.isEmpty(company.name) && company.name.equals(Constant.MZ_COMPANY_NAME)) {
-                args = mzfilterOriginIdentifier(company, withoutRedirectURL);
-            } else {
-                args = filterOriginIdentifiers(viewAbilityStatsResult, company, withoutRedirectURL);
-            }
-
-            //[4] 判断原剔除U字段后的URL是否是ViewAbility监测链接:带有2j字段
-            StringBuffer exposeURL = new StringBuffer();
-            StringBuffer viewabilityURL;
-
-            exposeURL.append(args[0]);
+            //将配置文件的arguments映射到JavaBean<HashMap>
+            ViewAbilityStats abilityStats = new ViewAbilityStats();
+            abilityStats.setSeparator(company.separator);
+            abilityStats.setEqualizer(company.equalizer);
+            abilityStats.setViewabilityarguments(company.config.viewabilityarguments);
+            // viewAbilityStats.setIsMZURL(company.name.equals(Constant.MZ_COMPANY_NAME));
 
 
-            boolean isViewAbility = false;
-            if (monitorType == MonitorType.EXPOSEWITHABILITY || monitorType == MonitorType.VIDEOEXPOSEWITHABILITY) {
-                isViewAbility = checkViewAbilityEnabled(company, withoutRedirectURL);//使用原URL判断是否具有参数
-                if (monitorType == MonitorType.VIDEOEXPOSEWITHABILITY)
-                    viewAbilityStatsResult.setVideoExpose(true); //标记当前可视化监测来自视频的ViewAbility
-                    viewAbilityStatsResult.setVideoPlayType(videoPlayType); //记录视频播放类型
-                    viewAbilityStatsResult.setVideoDuration((int)getValueFromUrl(company, originUrl, ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_DURATION));  //从请求中获取视频广告时长，用于中点监测
-            }
-
-
-            //[5] 获取广告位ID,然后通过广告位ID生成ImpressionID:配置文件的value.(adplacements)和company.separator提取URL中的广告位标识符
+            //[3] 原始监测链接中获取广告位ID,然后通过广告位ID生成ImpressionID
             String adAreaID = getAdAreaID(company, withoutRedirectURL);
+
+            String impressionAgument = abilityStats.get(ViewAbilityStats.IMPRESSIONID);
             String impressionID = "";
-
-            if (TextUtils.isEmpty(adAreaID)) {//如果广告位ID为空,则不进行ViewAbility监测,并且不生成impressionID,以普通click/expose方式上报
-                isViewAbility = false;
-                Logger.w("没有找到广告位ID,请确认Company是否有配置:adplacements");
-            } else {
-                impressionID = getImpressionID(company, monitorType, adAreaID);
-            }
-
-
-            //[6] 使用剔除2g/2j/2f/2h后的URL,追加2g字段(impressionID)以及value值,为空的情况下,key和value都不添加
             String impressionValue = "";
-            if (!TextUtils.isEmpty(impressionID)) {
-                String impressionIdentifier = viewAbilityStatsResult.get(ViewAbilityStatsResult.IMPRESSIONID);
-                if (!TextUtils.isEmpty(impressionIdentifier)) {
-                    sb = new StringBuilder();
-                    sb.append(company.separator);
-                    sb.append(impressionIdentifier);
-                    sb.append(company.equalizer);
-                    sb.append(impressionID);
-                    impressionValue = sb.toString();
-                }
+            if (!TextUtils.isEmpty(impressionAgument)) {
+                impressionID = getImpressionID(company, monitorType, adAreaID);
+                sb = new StringBuilder();
+                sb.append(company.separator);
+                sb.append(impressionAgument);
+                sb.append(company.equalizer);
+                sb.append(impressionID);
+                impressionValue = sb.toString();
             }
 
-            exposeURL.append(impressionValue);
+            //如果调用普通和视频可视化监测接口,需要从监测链接获取动态配置参数和可视参数过滤
+            if (monitorType == MonitorType.EXPOSEWITHABILITY || monitorType == MonitorType.VIDEOEXPOSEWITHABILITY) {
 
-            //mzcommit-秒针view非空即进行可见监测，可见监测发的普通曝光要加vx=0
-            if (!TextUtils.isEmpty(company.name) && company.name.equals(Constant.MZ_COMPANY_NAME)
-                    && adView != null && (adView instanceof View)) {
+                //从配置中读取采集策略
+                abilityStats.setViewabilityTrackPolicy(company.sswitch.viewabilityTrackPolicy);
+                //从原始监测链接动态提取满足可视时长
+                abilityStats.setURLExposeDuration(withoutRedirectURL);
+                //从原始监测链接动态提取可视覆盖比率
+                abilityStats.setURLShowCoverRate(withoutRedirectURL);
 
-                //进行可见监测
-                isViewAbility = true;
-
-                //追加vx字段
-                String mzViewabilityType = "";
-                String mzViewability = viewAbilityStatsResult.get(ViewAbilityStatsResult.MZ_VIEWABILITY);
-                if (!TextUtils.isEmpty(mzViewability)) {
-                    sb = new StringBuilder();
-                    sb.append(company.separator);
-                    sb.append(mzViewability);
-                    sb.append(company.equalizer);
-                    sb.append("0");
-                    mzViewabilityType = sb.toString();
+                if (monitorType == MonitorType.VIDEOEXPOSEWITHABILITY) {
+                    //标记当前为视频可视监测
+                    abilityStats.setVideoExpose(true);
+                    //记录视频播放类型
+                    abilityStats.setVideoPlayType(videoPlayType);
+                    //从原始链接动态提取视频广告时长，单位s 用于视频进度监测
+                    abilityStats.setURLVideoDuration(withoutRedirectURL);
+                    //从原始链接动态提取视频广告过程监测配置
+                    abilityStats.setURLVideoProgressTracks(withoutRedirectURL);
                 }
 
-                exposeURL.append(mzViewabilityType);
-            }
-            //[7] 如果是viewability监测,view为空时2j/2f/2h使用默认value拼装到URL后,以正常曝光链接上报
-            exposeURL.append(redirectStr);
-            String trackURL = exposeURL.toString();
+                //[4] 去u监测链接过滤占用字段:除了某些需要用到的参数会保留,其余在sdkconfig.xml中<viewabilityarguments>出现的关键字都会替换为空
+                String filteredURL = filterIdentifiers(company, abilityStats, withoutRedirectURL);
 
-            if (isViewAbility) {
+                //[5] 过滤后的URL作为可视监测补发的普通曝光,同时需要串入ImpressionID
+                exposeURL.append(filteredURL);
+                exposeURL.append(impressionValue);
 
-                viewabilityURL = new StringBuffer();
-                viewabilityURL.append(args[1]);
-                viewabilityURL.append(impressionValue);
+                //[6] 通过AdviewabilityEnable确定链接是否是可视监测链接
+                // boolean isViewAbility = checkViewAbilityEnabled(viewAbilityStats, withoutRedirectURL);
+//                if (isViewAbility) {
+//                }
 
-                if (adView == null || !(adView instanceof View)) {
-                    Logger.w("监测链接传入的AdView为空,以正常曝光方式监测.");
-                    String defaultAttr = viewAbilityStatsResult.getDefaultViewAbilityData();
-                    viewabilityURL.append(defaultAttr);
-                    viewabilityURL.append(redirectStr);
-                    trackURL = viewabilityURL.toString();
-                } else {
-                    viewAbilityStatsResult.setRedirectURL(redirectStr);
+                if (adView != null && (adView instanceof View)) {
+
+                    String viewabilityURL = exposeURL.toString();
+
+                    //[7] 如果是可视化监测链接,普通曝光需要追加标识字段,ad:2f,mz:vx
+                    String viewAbilityArgument = abilityStats.get(ViewAbilityStats.ADVIEWABILITY);
+                    if (!TextUtils.isEmpty(viewAbilityArgument)) {
+                        sb = new StringBuilder();
+                        sb.append(company.separator);
+                        sb.append(viewAbilityArgument);
+                        sb.append(company.equalizer);
+                        String viewability = sb.toString();
+                        exposeURL.append(viewability);
+                    }
+
                     //开启线程执行ViewAbility可视化监测
-                    viewAbilityService.addViewAbilityMonitor(viewabilityURL.toString(), adView, impressionID, adAreaID, viewAbilityStatsResult);
+                    viewAbilityService.addViewAbilityMonitor(viewabilityURL, adView, impressionID, adAreaID, abilityStats);
+                } else {//如果传入View异常,传入默认为空的数据
+                    Logger.w("监测链接传入的AdView为空,以正常曝光方式监测.");
+                    String failedParams = abilityStats.getFailedViewabilityParams();//2j[],2f0,2h0
+                    exposeURL.append(failedParams);
+                }
+
+
+            } else { //如果调用普通曝光/点击接口,不需要可视化监测逻辑
+
+                //如果有配置ImpressionID Argument,普通曝光只需要串入impressionID,不串入
+                if (!TextUtils.isEmpty(impressionValue)) {
+                    String regex = company.separator + impressionAgument + company.equalizer + "[^" + company.separator + "]*";
+                    //监测链接替换原有impressionID KEY和VALUE
+                    String filteredURL = withoutRedirectURL.replaceAll(regex, "");
+                    exposeURL.append(filteredURL);
+                    exposeURL.append(impressionValue);
+                } else {
+                    exposeURL.append(withoutRedirectURL);
                 }
             }
 
+            //[7] 普通曝光参数拼装完毕后需要重新追加上REDIRECTURL字段
+            exposeURL.append(redirectStr);
 
-            //[8] 最终将REDIRECTURL重新拼装到URL末尾,并回调原有Countly线程单独发送监测事件
-            mmaSdkCallback.onEventPresent(trackURL);
 
             //[LOCALTEST] 测试计数:普通曝光事件产生计数
             if (Countly.LOCAL_TEST) {
@@ -327,10 +314,7 @@ public class ViewAbilityHandler {
                 KLog.i("withoutRedirectURL:" + withoutRedirectURL);
                 KLog.i("adAreaID:" + adAreaID);
                 KLog.i("imressionID:" + impressionID);
-                KLog.i("isViewability:" + isViewAbility);
-                KLog.d("exposeURL origin:" + args[0]);
-                KLog.d("viewabilityURL origin :" + args[1]);
-                KLog.i("trackURL:" + trackURL);
+                KLog.i("trackURL:" + exposeURL.toString());
                 KLog.i("adView:" + adView);
                 KLog.i("eventListener:" + mmaSdkCallback);
                 KLog.i("********************************************");
@@ -339,6 +323,10 @@ public class ViewAbilityHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+        //[8] 最终将REDIRECTURL重新拼装到URL末尾,并回调原有Countly线程单独发送监测事件
+        mmaSdkCallback.onEventPresent(exposeURL.toString());
 
     }
 
@@ -354,7 +342,7 @@ public class ViewAbilityHandler {
         String adAreaIdentifier = "";
         HashMap<String, Argument> adplacements = company.config.adplacements;
         if (adplacements != null) {
-            Argument argument = adplacements.get(ViewAbilityStatsResult.ADPLACEMENT);
+            Argument argument = adplacements.get(ViewAbilityStats.ADPLACEMENT);
             if (argument != null) adAreaIdentifier = argument.value;
         }
         return adAreaIdentifier;
@@ -363,6 +351,7 @@ public class ViewAbilityHandler {
 
     /**
      * 获取配置文件config.arguments标签内的REDIRECTURL的值
+     *
      * @param company
      * @return
      * @throws Exception
@@ -385,26 +374,22 @@ public class ViewAbilityHandler {
 
 
     /**
-     * 判断是否是可视化监测专用链接
-     * 链接里是否包含2j(ADVIEWABILITYEVENTS)
+     * 判断监测链接是否包含可视化监测标识
+     * 链接里是否包含可视化配置项:AdviewabilityEnable
      *
      * @param originUrl
      * @return
      */
-    private boolean checkViewAbilityEnabled(Company company,String originUrl) throws Exception {
+    private boolean checkViewAbilityEnabled(ViewAbilityStats abilityStatsResult, String originUrl) throws Exception {
 
-        String[] splits = originUrl.split(company.separator);
+        String[] splits = originUrl.split(abilityStatsResult.getSeparator());
 
-        String viewabilityIdentifier = "";
-        HashMap<String, Argument> viewabilityarguments = company.config.viewabilityarguments;
-        if (viewabilityarguments != null) {
-            Argument argument = viewabilityarguments.get(ViewAbilityStatsResult.ADVIEWABILITYEVENTS);
-            if (null != argument) viewabilityIdentifier = argument.value;
-        }
+        String viewabilityIdentifier = abilityStatsResult.get(ViewAbilityStats.ADVIEWABILITY_ENABLE);
 
         if (!TextUtils.isEmpty(viewabilityIdentifier)) {
             //2g+equalizer
-            String prefix = viewabilityIdentifier + company.equalizer;
+            String prefix = viewabilityIdentifier + abilityStatsResult.getEqualizer();
+
             for (String item : splits) {
                 boolean hasPrefix = item.startsWith(prefix);
                 //字符串截取,最后拼装
@@ -446,7 +431,7 @@ public class ViewAbilityHandler {
      * @param adUrl
      * @return
      */
-    private String getAdAreaID(Company company,String adUrl) throws Exception {
+    private String getAdAreaID(Company company, String adUrl) throws Exception {
         String adAreaId = "";
         String adAreaIdentifier = getAdAreaIdentifier(company);
         String[] splits = adUrl.split(company.separator);
@@ -497,79 +482,6 @@ public class ViewAbilityHandler {
         return impressionID;
     }
 
-
-    /**
-     * 拼装2g字段
-     *
-     * @param company
-     * @param originUrl
-     * @return
-     * @throws Exception
-     */
-    private String[] filterOriginIdentifiers(ViewAbilityStatsResult result, Company company, String originUrl) {
-
-
-        //TODO 检查URL内是否有包含u字段,如果存在切割出来,等impressionID或者监测URL都赋值完毕再copy到链接最末端
-        StringBuffer exposeURL = new StringBuffer();
-        StringBuffer viewabilityURL = new StringBuffer();
-
-        String impressionIdentifier = "";
-        String eventsIdentifier = "";
-        String abilityIdentifier = "";
-        String measureIdentifier = "";
-        String[] args = new String[2];
-
-        try {
-            String impressionArgument = result.get(ViewAbilityStatsResult.IMPRESSIONID);
-            if (!TextUtils.isEmpty(impressionArgument))
-                impressionIdentifier = impressionArgument + company.equalizer;
-            String eventArgument = result.get(ViewAbilityStatsResult.ADVIEWABILITYEVENTS);
-            if (!TextUtils.isEmpty(eventArgument))
-                eventsIdentifier = eventArgument + company.equalizer;
-            String abilityArgument = result.get(ViewAbilityStatsResult.ADVIEWABILITY);
-            if (!TextUtils.isEmpty(abilityArgument))
-                abilityIdentifier = abilityArgument + company.equalizer;
-            String measureArgument = result.get(ViewAbilityStatsResult.ADMEASURABILITY);
-            if (!TextUtils.isEmpty(measureArgument))
-                measureIdentifier = measureArgument + company.equalizer;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            String[] splits = originUrl.split(company.separator);
-
-            //如果原url里包含impression配置,替换默认value
-            for (String item : splits) {
-
-                //如果是2j,2f,2h,则不再组装到url内
-                if (!item.startsWith(eventsIdentifier) && !item.startsWith(abilityIdentifier) && !item.startsWith(measureIdentifier) && !item.startsWith(impressionIdentifier)) {
-                    viewabilityURL.append(item);
-                    viewabilityURL.append(company.separator);
-                }
-
-                if (!item.startsWith(impressionIdentifier)) {
-                    exposeURL.append(item);
-                    exposeURL.append(company.separator);
-                }
-            }
-
-            exposeURL.deleteCharAt(exposeURL.length() - 1);
-            viewabilityURL.deleteCharAt(viewabilityURL.length() - 1);
-
-
-            args[0] = exposeURL.toString();
-            args[1] = viewabilityURL.toString();
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return args;
-    }
-
     private static String generateImpressionID(Context context, String adAreaId) {
         try {
             String mac = DeviceInfoUtil.getMacAddress(context);
@@ -585,78 +497,92 @@ public class ViewAbilityHandler {
     }
 
     //mzcommit-url中包含的配置文件中已有的参数去掉后重新添加
-    private String[] mzfilterOriginIdentifier(Company company, String originUrl) {
+    private String filterIdentifiers(Company company, ViewAbilityStats abilityStats, String adURL) {
 
-        StringBuffer exposeURL = new StringBuffer();
-        StringBuffer viewabilityURL = new StringBuffer();
-
-        String[] args = new String[2];
+        String filteredURL;
 
         try {
-            HashMap<String, Argument> requiredViewabilityarguments = company.config.viewabilityarguments;
+            HashMap<String, Argument> arguments = company.config.viewabilityarguments;
             String separator = company.separator;
             String equalizer = company.equalizer;
 
+            String showCoverRate = "";
+            String exposeDuration = "";
+            String filterURL = adURL;
+
             //去掉viewabilityarguments中的参数
-            for (String argumentKey : requiredViewabilityarguments.keySet()) {
-                String key = argumentKey;
-                if (!TextUtils.isEmpty(key)) {
-                    String value = requiredViewabilityarguments.get(key).value;
+            for (String argumentKey : arguments.keySet()) {
+                if (!TextUtils.isEmpty(argumentKey)) {
+                    String value = arguments.get(argumentKey).value;
                     if (!TextUtils.isEmpty(value)) {
-                        if (key.equals(ViewAbilityStatsResult.MZ_VIEWABILITY_RECORD)) {
+
+                        //部分参数需要保留
+                        if (argumentKey.equals(ViewAbilityStats.ADVIEWABILITY_RECORD)) {//va
                             continue;
-                        } else if (key.equals(ViewAbilityStatsResult.MZ_VIEWABILITY_VIDEO_DURATION)) {
+                        } else if (argumentKey.equals(ViewAbilityStats.ADVIEWABILITY_VIDEO_DURATION)) {//vb||2w
                             continue;
+                        } else if (argumentKey.equals(ViewAbilityStats.ADVIEWABILITY_VIDEO_PROGRESSPOINT)) {//2x
+                            continue;
+                        } else if (argumentKey.equals(ViewAbilityStats.ADVIEWABILITY_CONFIG_THRESHOLD)) {//vi||2u
+                            try {
+                                int urlExposeDuration = abilityStats.getURLExposeDuration();
+                                if (urlExposeDuration > 0) {
+                                    urlExposeDuration = urlExposeDuration / 1000;
+                                } else {
+                                    urlExposeDuration = abilityStats.isVideoExpose() ? abilityConfig.getVideoExposeValidDuration() : abilityConfig.getExposeValidDuration();
+                                    urlExposeDuration = urlExposeDuration / 1000;
+                                }
+                                exposeDuration = value + equalizer + String.valueOf(urlExposeDuration);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else if (argumentKey.equals(ViewAbilityStats.ADVIEWABILITY_CONFIG_AREA)) {//vh||2v
+                            try {
+                                int coverRate;
+                                if (abilityStats.getURLShowCoverRate() > 0) {
+                                    coverRate = (int) (abilityStats.getURLShowCoverRate() * 100);
+                                } else {
+                                    coverRate = (int) (abilityConfig.getCoverRateScale() * 100);
+                                }
+                                showCoverRate = value + equalizer + String.valueOf(coverRate);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
-                        if (originUrl.contains(separator + value + equalizer)) {
-                            originUrl = originUrl.replaceAll(separator + value + equalizer + "[^" + separator + "]*", "");
+//                        else if (argumentKey.equals(ViewAbilityStats.ADVIEWABILITY_ENABLE)) {//2j||vx
+//                            continue;
+//                        }
+
+                        if (filterURL.contains(separator + value + equalizer)) {
+                            String regex = separator + value + equalizer + "[^" + separator + "]*";
+                            filterURL = filterURL.replaceAll(regex, "");
                         }
                     }
                 }
             }
 
-            exposeURL.append(originUrl);
-            viewabilityURL.append(originUrl);
+            StringBuffer sb = new StringBuffer();
+            sb.append(filterURL);
 
-            args[0] = exposeURL.toString();
-            args[1] = viewabilityURL.toString();
+            //将实际生效的满足可视时长参数替换到监测链接
+            if (!TextUtils.isEmpty(exposeDuration)) {
+                sb.append(separator);
+                sb.append(exposeDuration);
+            }
+            //将实际生效的满足可视覆盖尺寸参数替换到监测链接
+            if (!TextUtils.isEmpty(showCoverRate)) {
+                sb.append(separator);
+                sb.append(showCoverRate);
+            }
+            filteredURL = sb.toString();
 
         } catch (Exception e) {
             e.printStackTrace();
+            filteredURL = adURL;
         }
 
-        return args;
+        return filteredURL;
     }
 
-    //mzcommit-从url中取视频广告时长进行中点监测
-    private float getValueFromUrl(Company company, String url, String tag) {
-        try {
-            String key = company.config.viewabilityarguments.get(tag).value;
-            if (TextUtils.isEmpty(key)) {
-                return 0;
-            }
-
-            String value = getKvValueFromUrl(url, company.separator, company.equalizer, key);
-            if (value != null) {
-                return Float.parseFloat(value);
-            }
-            return  0;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
-    }
-
-    //mzcommit
-    private String getKvValueFromUrl(final String url, final String separator, final String equalizer, final String key) {
-        for (String kv : url.split(separator)) {
-            if (kv.startsWith(key+equalizer)) {
-                int idx = kv.indexOf(equalizer);
-                return kv.substring(idx+1).trim();
-            }
-        }
-        return null;
-    }
 
 }

@@ -52,7 +52,7 @@ public class ViewAbilityService {
         presenter = new AbilityEngine(context, viewAbilityEventListener, viewAbilityConfig);
     }
 
-    public void addViewAbilityMonitor(String adURL, View view, String impressionID, String adAreaID, ViewAbilityStatsResult result) {
+    public void addViewAbilityMonitor(String adURL, View view, String impressionID, String adAreaID, ViewAbilityStats result) {
         WeakReference<View> weakReference = new WeakReference<>(view);
         View adView = weakReference.get();
         if (adView != null) {

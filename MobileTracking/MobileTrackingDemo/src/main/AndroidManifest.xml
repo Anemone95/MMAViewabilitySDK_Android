@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="cn.com.mma.mobile.tracking.test.LocalTestActivity"
+            android:name="cn.com.mma.mobile.tracking.demo.MainActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait">
             <intent-filter>

@@ -4,11 +4,14 @@ import java.util.Map;
 
 /**
  * 消息实体类，对应sdkconfig.xml中的<switch>标签
- * 
- * @author lincoln
  */
 public class Switch {
-	public boolean isTrackLocation;
-	public String offlineCacheExpiration;
-	public Map<String, String> encrypt;
+    /* 是否监测定位 */
+    public boolean isTrackLocation;
+    /* 监测数据缓存有效期 */
+    public String offlineCacheExpiration;
+    /* 设备参数是否加密 */
+    public Map<String, String> encrypt;
+    /* 可视化监测采集数据策略 */
+    public int viewabilityTrackPolicy;
 }
