@@ -37,8 +37,8 @@ public class ViewFrameSlice implements Serializable {
 
     //2l 透明度 1.0=完全不透明 0.0=完全透明
     private float alpha;
-    //2m 是否隐藏 0=不隐藏 1=隐藏
-    private int hidden;
+    //2m 是否显示 0=显示 1=不显示
+    private int shown;
     //2r 屏幕是否点亮 1=开屏 0 = 熄灭
     private int screenOn;
     //是否聚焦 0-1
@@ -86,7 +86,7 @@ public class ViewFrameSlice implements Serializable {
 
 
             //是否被隐藏
-            hidden = (adView.getVisibility() == View.VISIBLE) ? 0 : 1;
+            shown = (adView.isShown()) ? 0 : 1;
 
             //可视尺寸 在当前屏幕范围内,排除不可见区域后,view的宽和高,滑动时实时变动(和WindowFrame相交运算)
             Rect screenRect = ViewHelper.getScreenRect(context);
@@ -124,7 +124,7 @@ public class ViewFrameSlice implements Serializable {
             KLog.i("[2k] adView Size:" + adSize);
             KLog.i("[2d] adView visible left top Point:" + visibleLeftPoint);
             KLog.i("[2l] adView alpha:" + alpha);
-            KLog.i("[2m] adView hidden:" + hidden);
+            KLog.i("[2m] adView isShown:" + shown);
             KLog.i("[2o] adView visible Size:" + visibleSize);
             KLog.i("[2n] adView cover rate:" + coverRate);
             KLog.i("[2r] current Screen is Light:" + screenOn);
@@ -160,8 +160,8 @@ public class ViewFrameSlice implements Serializable {
         return alpha;
     }
 
-    public int getHidden() {
-        return hidden;
+    public int getShown() {
+        return shown;
     }
 
     public int getScreenOn() {
@@ -179,8 +179,8 @@ public class ViewFrameSlice implements Serializable {
      * @return
      */
     public boolean validateAdVisible(float confCoverRate) {
-        //被覆盖率 <= 0.5 && 不隐藏 && 不完全透明 && 开屏
-        if (coverRate <= confCoverRate && hidden == 0 && alpha > 0.001 && screenOn == 1) {
+        //被覆盖率 <= 0.5 && 显示 && 不完全透明 && 开屏
+        if (coverRate <= confCoverRate && shown == 0 && alpha > 0.001 && screenOn == 1) {
             visibleAbility = 1;
         } else {
             visibleAbility = 0;
@@ -201,7 +201,7 @@ public class ViewFrameSlice implements Serializable {
                     && visiblePoint.equals(otherSlice.visiblePoint)
                     && visibleSize.equals(otherSlice.visibleSize)
                     && Math.abs(alpha - otherSlice.alpha) < 0.001
-                    && hidden == otherSlice.hidden
+                    && shown == otherSlice.shown
                     && screenOn == otherSlice.screenOn
                     && coverRate == otherSlice.coverRate) {
                 return true;
@@ -349,7 +349,7 @@ public class ViewFrameSlice implements Serializable {
 
     @Override
     public String toString() {
-        return "[ 2t=" + captureTime + ",2k=" + adSize + ",2d=" + visiblePoint + ",2o=" + visibleSize + ",2n=" + coverRate + ",2l=" + alpha + ",2m=" + hidden + ",2r=" + screenOn + "]";
+        return "[ 2t=" + captureTime + ",2k=" + adSize + ",2d=" + visiblePoint + ",2o=" + visibleSize + ",2n=" + coverRate + ",2l=" + alpha + ",2m=" + shown + ",2r=" + screenOn + "]";
     }
 }
 

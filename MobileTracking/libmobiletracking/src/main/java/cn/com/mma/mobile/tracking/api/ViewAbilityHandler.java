@@ -258,28 +258,29 @@ public class ViewAbilityHandler {
                 // boolean isViewAbility = checkViewAbilityEnabled(viewAbilityStats, withoutRedirectURL);
 //                if (isViewAbility) {
 //                }
+                StringBuffer viewabilityURL = new StringBuffer();
+                viewabilityURL.append(exposeURL);
+
+                //[7] 如果是可视化监测链接,普通曝光需要追加标识字段,ad:2f,mz:vx
+                String viewAbilityArgument = abilityStats.get(ViewAbilityStats.ADVIEWABILITY);
+                if (!TextUtils.isEmpty(viewAbilityArgument)) {
+                    sb = new StringBuilder();
+                    sb.append(company.separator);
+                    sb.append(viewAbilityArgument);
+                    String viewability = sb.toString();
+                    exposeURL.append(viewability);
+                }
 
                 if (adView != null && (adView instanceof View)) {
 
-                    String viewabilityURL = exposeURL.toString();
-
-                    //[7] 如果是可视化监测链接,普通曝光需要追加标识字段,ad:2f,mz:vx
-                    String viewAbilityArgument = abilityStats.get(ViewAbilityStats.ADVIEWABILITY);
-                    if (!TextUtils.isEmpty(viewAbilityArgument)) {
-                        sb = new StringBuilder();
-                        sb.append(company.separator);
-                        sb.append(viewAbilityArgument);
-                        sb.append(company.equalizer);
-                        String viewability = sb.toString();
-                        exposeURL.append(viewability);
-                    }
-
                     //开启线程执行ViewAbility可视化监测
-                    viewAbilityService.addViewAbilityMonitor(viewabilityURL, adView, impressionID, adAreaID, abilityStats);
-                } else {//如果传入View异常,传入默认为空的数据
+                    viewAbilityService.addViewAbilityMonitor(viewabilityURL.toString(), adView, impressionID, adAreaID, abilityStats);
+
+                } else {//如果传入View为空或者非View对象,则可视化监测结果为不可见:Adviewability=0,不可测量:AdMeasurability=0
                     Logger.w("监测链接传入的AdView为空,以正常曝光方式监测.");
                     String failedParams = abilityStats.getFailedViewabilityParams();//2j[],2f0,2h0
-                    exposeURL.append(failedParams);
+                    viewabilityURL.append(failedParams);
+                    mmaSdkCallback.onEventPresent(viewabilityURL.toString());
                 }
 
 

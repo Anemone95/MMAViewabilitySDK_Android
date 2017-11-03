@@ -78,10 +78,13 @@ public class ViewAbilityExplorer implements Serializable {
         this.viewAbilityStats = result;
 
         //如果监测链接没有动态配置满足可视覆盖比率,使用默认Config的配置
-        float coverRate = 1 - viewAbilityStats.getURLShowCoverRate(); //URL动态配置的是可见覆盖比率,计算时使用的是被覆盖比率,为保持统一,在使用时统一使用后者
-        if (coverRate <= 0) {
+        float coverRate;
+        if (viewAbilityStats.getURLShowCoverRate() > 0.0f) {
+            coverRate = 1 - viewAbilityStats.getURLShowCoverRate(); //URL动态配置的是可见覆盖比率,计算时使用的是被覆盖比率,为保持统一,在使用时统一使用后者
+        } else {
             coverRate = config.getCoverRateScale();
         }
+
         this.viewFrameBlock = new ViewFrameBlock(result.getViewabilityTrackPolicy(), config.getMaxUploadAmount(), coverRate);
         initConfigParams();
     }

@@ -39,7 +39,7 @@ public class ViewAbilityStats implements Serializable {
     /* 可视视图透明度 2l */
     public static final String ADVIEWABILITY_ALPHA = "AdviewabilityAlpha";
     /* 可视视图是否隐藏 2m */
-    public static final String ADVIEWABILITY_HIDE = "AdviewabilityHide";
+    public static final String ADVIEWABILITY_SHOWN = "AdviewabilityShown";
     /* 可视视图覆盖率 2n */
     public static final String ADVIEWABILITY_COVERRATE = "AdviewabilityCoverRate";
     /* 可视视图可视尺寸 2o */
@@ -189,7 +189,7 @@ public class ViewAbilityStats implements Serializable {
             if (!TextUtils.isEmpty(configAreaArgument)) {
                 String showCoverRateStr = getValueFromURL(configAreaArgument, originURL);
                 float showCoverRate = Integer.valueOf(showCoverRateStr) / 100.0f;
-                if (showCoverRate > 0.0f && showCoverRate <= 1.0f)
+                if (showCoverRate > 0.0f && showCoverRate < 1.0f)
                     this.urlShowCoverRate = showCoverRate;
             }
         } catch (Exception e) {
@@ -337,9 +337,9 @@ public class ViewAbilityStats implements Serializable {
             if (!TextUtils.isEmpty(vbalpha)) {
                 events.put(vbalpha, slice.getAlpha());
             }
-            String vbhide = viewabilityarguments.get(ADVIEWABILITY_HIDE);
-            if (!TextUtils.isEmpty(vbhide)) {
-                events.put(vbhide, slice.getHidden());
+            String vbshown = viewabilityarguments.get(ADVIEWABILITY_SHOWN);
+            if (!TextUtils.isEmpty(vbshown)) {
+                events.put(vbshown, slice.getShown());
             }
             String vbrate = viewabilityarguments.get(ADVIEWABILITY_COVERRATE);
             if (!TextUtils.isEmpty(vbrate)) {
