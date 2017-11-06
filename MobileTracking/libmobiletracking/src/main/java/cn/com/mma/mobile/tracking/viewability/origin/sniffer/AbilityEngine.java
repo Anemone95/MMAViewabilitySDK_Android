@@ -88,10 +88,10 @@ public class AbilityEngine implements ViewAbilityPresenter {
             }
             String adURL = bundle.getString(ViewAbilityService.BUNDLE_ADURL);
             String impressionID = bundle.getString(ViewAbilityService.BUNDLE_IMPRESSIONID);
-            String adAreaID = bundle.getString(ViewAbilityService.BUNDLE_ADAREAID);
+            String explorerID = bundle.getString(ViewAbilityService.BUNDLE_EXPLORERID);
             ViewAbilityStats result = (ViewAbilityStats) bundle.getSerializable(ViewAbilityService.BUNDLE_VBRESULT);
 
-            abilityWorker.addWorker(adURL, adView, impressionID, adAreaID, result);
+            abilityWorker.addWorker(adURL, adView, impressionID, explorerID, result);
         }
     }
 

@@ -37,12 +37,12 @@ public class ViewFrameSlice implements Serializable {
 
     //2l 透明度 1.0=完全不透明 0.0=完全透明
     private float alpha;
-    //2m 是否显示 0=显示 1=不显示
+    //2m 是否显示 0=不显示 1=显示
     private int shown;
     //2r 屏幕是否点亮 1=开屏 0 = 熄灭
     private int screenOn;
     //是否聚焦 0-1
-    private boolean focus;
+    //private boolean focus;
     //2n 覆盖比例 0.00 - 1.00
     private float coverRate;
 
@@ -61,7 +61,6 @@ public class ViewFrameSlice implements Serializable {
             int height = adView.getHeight();
             adSize = width + "x" + height;
 
-            //TODO 可视区域是否包括被cliped或是panding出去的部分,目前获取方式是view原始左上角位置,
             //AdView实际在Window上可视区域坐标(view左上角x,y点)
 //            Rect visibleRect = new Rect();
 //            adView.getGlobalVisibleRect(visibleRect);
@@ -72,7 +71,6 @@ public class ViewFrameSlice implements Serializable {
             visibleLeftPoint.y = visibleRect.top;
             visiblePoint = visibleLeftPoint.x + "x" + visibleLeftPoint.y;
 
-            //目前
             boolean checkFrameBounds = checkFrameBounds(adView);
             if (!checkFrameBounds) {
                 Rect rect = traverseParent(adView, visibleRect);
@@ -85,8 +83,8 @@ public class ViewFrameSlice implements Serializable {
             }
 
 
-            //是否被隐藏
-            shown = (adView.isShown()) ? 0 : 1;
+            //是否显示
+            shown = (adView.isShown()) ? 1 : 0;
 
             //可视尺寸 在当前屏幕范围内,排除不可见区域后,view的宽和高,滑动时实时变动(和WindowFrame相交运算)
             Rect screenRect = ViewHelper.getScreenRect(context);
@@ -106,12 +104,11 @@ public class ViewFrameSlice implements Serializable {
             coverRate = (float) Math.round(temp * 100) / 100;
 
             //屏幕是否点亮
-            screenOn = (ViewHelper.isScreenOn(adView) && adView.hasWindowFocus()) ? 1:0;
+            screenOn = (ViewHelper.isScreenOn(adView) && adView.hasWindowFocus()) ? 1 : 0;
 
             Rect selfRect = new Rect();
             adView.getLocalVisibleRect(selfRect);
 
-            /**保留字段 view在坐标系的Rect*/
 //            adWindowRect = visibleRect;
 //            adLocalRect = selfRect;
 
@@ -180,7 +177,7 @@ public class ViewFrameSlice implements Serializable {
      */
     public boolean validateAdVisible(float confCoverRate) {
         //被覆盖率 <= 0.5 && 显示 && 不完全透明 && 开屏
-        if (coverRate <= confCoverRate && shown == 0 && alpha > 0.001 && screenOn == 1) {
+        if (coverRate <= confCoverRate && shown == 1 && alpha > 0.001 && screenOn == 1) {
             visibleAbility = 1;
         } else {
             visibleAbility = 0;

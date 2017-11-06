@@ -27,7 +27,7 @@ public class ViewAbilityExplorer implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String adAreaID;
+    private String explorerID;
     /*监测链接*/
     private String adURL;
     /*广告视图*/
@@ -68,8 +68,8 @@ public class ViewAbilityExplorer implements Serializable {
     private int exposeValidDuration;
 
 
-    public ViewAbilityExplorer(String adAreaID, String adURL, View adView, String impressionID, ViewAbilityConfig config, ViewAbilityStats result) {
-        this.adAreaID = adAreaID;
+    public ViewAbilityExplorer(String explorerID, String adURL, View adView, String impressionID, ViewAbilityConfig config, ViewAbilityStats result) {
+        this.explorerID = explorerID;
         this.adURL = adURL;
         this.adView = adView;
         this.impressionID = impressionID;
@@ -264,7 +264,7 @@ public class ViewAbilityExplorer implements Serializable {
 
         //如果没有视频进度监测,移除任务
         if (!isVideoProcessMonitor || !isVideoProcessTracking) {
-            abilityCallback.onFinished(adAreaID);
+            abilityCallback.onFinished(explorerID);
             abilityStatus = AbilityStatus.UPLOADED;
         }
         KLog.e("<-------------------------------------------------------------------------------->");
@@ -286,7 +286,7 @@ public class ViewAbilityExplorer implements Serializable {
 
     @Override
     public String toString() {
-        return "[ impressionID=" + impressionID + ",adAreaID=" + adAreaID + ",adURL=" + adURL + ",view=" + adView + " block=" + viewFrameBlock.toString() + " ]";
+        return "[ impressionID=" + impressionID + ",explorerID=" + explorerID + ",adURL=" + adURL + ",view=" + adView + " block=" + viewFrameBlock.toString() + " ]";
     }
 
 
@@ -332,7 +332,7 @@ public class ViewAbilityExplorer implements Serializable {
                 isVideoProcessTracking = false;
                 if (isViewabilityTrackFinished && abilityCallback != null) {
                     abilityStatus = AbilityStatus.UPLOADED;
-                    abilityCallback.onFinished(adAreaID);
+                    abilityCallback.onFinished(explorerID);
                 }
 
             }

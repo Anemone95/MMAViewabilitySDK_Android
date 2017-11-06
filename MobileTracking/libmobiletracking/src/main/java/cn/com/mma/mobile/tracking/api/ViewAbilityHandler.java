@@ -261,7 +261,7 @@ public class ViewAbilityHandler {
                 StringBuffer viewabilityURL = new StringBuffer();
                 viewabilityURL.append(exposeURL);
 
-                //[7] 如果是可视化监测链接,普通曝光需要追加标识字段,ad:2f,mz:vx
+                //[7] 如果是可视化监测,普通曝光需要追加标识字段,ad:2f,mz:vx
                 String viewAbilityArgument = abilityStats.get(ViewAbilityStats.ADVIEWABILITY);
                 if (!TextUtils.isEmpty(viewAbilityArgument)) {
                     sb = new StringBuilder();
@@ -274,7 +274,8 @@ public class ViewAbilityHandler {
                 if (adView != null && (adView instanceof View)) {
 
                     //开启线程执行ViewAbility可视化监测
-                    viewAbilityService.addViewAbilityMonitor(viewabilityURL.toString(), adView, impressionID, adAreaID, abilityStats);
+                    String explorerID = company.domain.url + adAreaID;
+                    viewAbilityService.addViewAbilityMonitor(viewabilityURL.toString(), adView, impressionID, explorerID, abilityStats);
 
                 } else {//如果传入View为空或者非View对象,则可视化监测结果为不可见:Adviewability=0,不可测量:AdMeasurability=0
                     Logger.w("监测链接传入的AdView为空,以正常曝光方式监测.");
@@ -540,7 +541,7 @@ public class ViewAbilityHandler {
                         } else if (argumentKey.equals(ViewAbilityStats.ADVIEWABILITY_CONFIG_AREA)) {//vh||2v
                             try {
                                 int coverRate;
-                                if (abilityStats.getURLShowCoverRate() > 0) {
+                                if (abilityStats.getURLShowCoverRate() > 0.0f) {
                                     coverRate = (int) (abilityStats.getURLShowCoverRate() * 100);
                                 } else {
                                     coverRate = (int) (abilityConfig.getCoverRateScale() * 100);

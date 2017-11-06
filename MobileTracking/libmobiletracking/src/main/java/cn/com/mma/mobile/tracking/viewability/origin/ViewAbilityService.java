@@ -21,7 +21,7 @@ public class ViewAbilityService {
 
     public static final String BUNDLE_ADURL = "adurl";
     public static final String BUNDLE_IMPRESSIONID = "impressionId";
-    public static final String BUNDLE_ADAREAID = "adareaId";
+    public static final String BUNDLE_EXPLORERID = "explorerID";
     public static final String BUNDLE_VBRESULT = "vbresult";
 
     //内部流程输出开关 release模式设置为FALSE
@@ -52,14 +52,14 @@ public class ViewAbilityService {
         presenter = new AbilityEngine(context, viewAbilityEventListener, viewAbilityConfig);
     }
 
-    public void addViewAbilityMonitor(String adURL, View view, String impressionID, String adAreaID, ViewAbilityStats result) {
+    public void addViewAbilityMonitor(String adURL, View view, String impressionID, String explorerID, ViewAbilityStats result) {
         WeakReference<View> weakReference = new WeakReference<>(view);
         View adView = weakReference.get();
         if (adView != null) {
             Bundle bundle = new Bundle();
             bundle.putString(BUNDLE_ADURL, adURL);
             bundle.putString(BUNDLE_IMPRESSIONID, impressionID);
-            bundle.putString(BUNDLE_ADAREAID, adAreaID);
+            bundle.putString(BUNDLE_EXPLORERID, explorerID);
             bundle.putSerializable(BUNDLE_VBRESULT, result);
             presenter.addViewAbilityMonitor(bundle, adView);
             Logger.d("URL:" + adURL + " 开启View Ability 监测->");

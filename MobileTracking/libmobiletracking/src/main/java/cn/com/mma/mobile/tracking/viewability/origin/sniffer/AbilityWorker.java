@@ -100,23 +100,23 @@ public class AbilityWorker implements AbilityCallback {
     /**
      * 添加一个工作者
      */
-    public void addWorker(String adURL, View adView, String impressionID, String adAreaID, ViewAbilityStats result) {
+    public void addWorker(String adURL, View adView, String impressionID, String explorerID, ViewAbilityStats result) {
 
         try {
-            ViewAbilityExplorer existExplore = explorers.get(adAreaID);
-            KLog.d("addWorker->ID:" + adAreaID + " existExplore:" + existExplore + "  url:" + adURL + "  adView" + adView);
+            ViewAbilityExplorer existExplore = explorers.get(explorerID);
+            KLog.d("addWorker->ID:" + explorerID + " existExplore:" + existExplore + "  url:" + adURL + "  adView" + adView);
             //当前Work池内已存在 停止并上报 使用新的监测覆盖
             if (existExplore != null) {
-                KLog.w("当前广告位:" + adAreaID + " 已经存在,停止监测并UPLOAD,当前任务重新开启!");
+                KLog.w("当前广告位:" + explorerID + " 已经存在,停止监测并UPLOAD,当前任务重新开启!");
                 existExplore.breakToUpload();
                 //explorers.remove(existExplore);
-                explorers.remove(adAreaID);
+                explorers.remove(explorerID);
             }
 
-            ViewAbilityExplorer normalExplorer = new ViewAbilityExplorer(adAreaID, adURL, adView, impressionID, config, result);
+            ViewAbilityExplorer normalExplorer = new ViewAbilityExplorer(explorerID, adURL, adView, impressionID, config, result);
             //收集完数据回调到本类内使用mmasdk发送最终监测URL
             normalExplorer.setAbilityCallback(this);
-            explorers.put(adAreaID, normalExplorer);
+            explorers.put(explorerID, normalExplorer);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -165,15 +165,15 @@ public class AbilityWorker implements AbilityCallback {
                 //用来存放失效或者已完成的序列数组
                 List<String> invalidExplorers = new ArrayList<>();
                 KLog.v("<-----------------------------Time Line Begin" + " [" + Thread.currentThread().getId() + "]" + "--------------------------------------------------->");
-                for (String adAreaID : explorers.keySet()) {
+                for (String explorerID : explorers.keySet()) {
 
-                    ViewAbilityExplorer explorer = explorers.get(adAreaID);
+                    ViewAbilityExplorer explorer = explorers.get(explorerID);
 
                     AbilityStatus abilityStatus = explorer.getAbilityStatus();
 
                     if (abilityStatus == AbilityStatus.UPLOADED) {
                         //已经上传过,移除到invidious
-                        invalidExplorers.add(adAreaID);
+                        invalidExplorers.add(explorerID);
                     } else if (abilityStatus == AbilityStatus.EXPLORERING) {
                         //准备开启
                         explorer.onExplore(mContext);
@@ -207,10 +207,9 @@ public class AbilityWorker implements AbilityCallback {
          */
         private void cacheWorks() {
             try {
-                for (String adAreaID : explorers.keySet()) {
-                    ViewAbilityExplorer explorer = explorers.get(adAreaID);
-                    KLog.i("cache explorer index:" + cacheIndex + "   item:" + explorer.toString());
-                    mCacheManager.setObject(adAreaID, explorer);
+                for (String explorerID : explorers.keySet()) {
+                    ViewAbilityExplorer explorer = explorers.get(explorerID);
+                    mCacheManager.setObject(explorerID, explorer);
                 }
                 cacheIndex = 0;
             } catch (Exception e) {

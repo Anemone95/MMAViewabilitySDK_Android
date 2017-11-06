@@ -242,9 +242,9 @@
                         <urlEncode>true</urlEncode>
                         <isRequired>true</isRequired>
                     </argument>
-                    <!-- 可视视图是否被隐藏 -->
+                    <!-- 可视视图是否显示 -->
                     <argument>
-                        <key>AdviewabilityHide</key>
+                        <key>AdviewabilityShown</key>
                         <value>2m</value>
                         <urlEncode>true</urlEncode>
                         <isRequired>true</isRequired>
@@ -435,7 +435,7 @@
                         <isRequired>true</isRequired>
                     </argument>
                     <argument>
-                        <key>NETWORKTYPE</key>
+                        <key>WIFI</key>
                         <value>mw</value>
                         <urlEncode>true</urlEncode>
                         <isRequired>true</isRequired>
@@ -556,7 +556,7 @@
                         <isRequired>true</isRequired>
                     </argument>
                     <argument>
-                        <key>AdviewabilityHide</key>
+                        <key>AdviewabilityShown</key>
                         <value>5</value>
                         <urlEncode>true</urlEncode>
                         <isRequired>true</isRequired>
