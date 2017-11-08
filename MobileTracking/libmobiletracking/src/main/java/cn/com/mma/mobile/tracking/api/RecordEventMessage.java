@@ -1,12 +1,14 @@
 package cn.com.mma.mobile.tracking.api;
 
+import android.content.Context;
+import android.text.TextUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import android.content.Context;
-import android.text.TextUtils;
+
 import cn.com.mma.mobile.tracking.bean.Argument;
 import cn.com.mma.mobile.tracking.bean.Company;
 import cn.com.mma.mobile.tracking.bean.SDK;
@@ -147,7 +149,6 @@ public class RecordEventMessage {
 
                     long expiration = getEventExpirationTime(company, sendEvent.getTimestamp());
                     SharedPreferencedUtil.putLong(context, SharedPreferencedUtil.SP_NAME_NORMAL, resultUrl, expiration);
-
 				} else {
 					Logger.d("domain不匹配" + hostUrl + " company.domain.url:"
 							+ company.domain.url);

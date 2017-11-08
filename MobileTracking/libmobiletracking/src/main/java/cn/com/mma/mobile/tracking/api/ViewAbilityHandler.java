@@ -271,6 +271,17 @@ public class ViewAbilityHandler {
                     exposeURL.append(viewability);
                 }
 
+                String viewAbilityArgumentResult = abilityStats.get(ViewAbilityStats.ADVIEWABILITY_RESULT);
+                if (!TextUtils.isEmpty(viewAbilityArgumentResult)) {
+                    sb = new StringBuilder();
+                    sb.append(company.separator);
+                    sb.append(viewAbilityArgumentResult);
+                    sb.append(company.equalizer);
+                    sb.append("0");
+                    String viewabilityResult = sb.toString();
+                    exposeURL.append(viewabilityResult);
+                }
+
                 if (adView != null && (adView instanceof View)) {
 
                     //开启线程执行ViewAbility可视化监测

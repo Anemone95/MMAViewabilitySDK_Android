@@ -196,6 +196,7 @@ public class ViewAbilityExplorer implements Serializable {
             params.put(viewAbilityStats.IMPRESSIONID, impressionID);
             params.put(viewAbilityStats.ADVIEWABILITYEVENTS, events);
             params.put(viewAbilityStats.ADVIEWABILITY, viewabilityState ? 1 : 0);
+            params.put(viewAbilityStats.ADVIEWABILITY_RESULT, viewabilityState ? 1 : 4);
             params.put(viewAbilityStats.ADMEASURABILITY, 1);
 
             JSONObject jsonObject = new JSONObject(params);
@@ -230,6 +231,15 @@ public class ViewAbilityExplorer implements Serializable {
                 sb.append(abilityArgument);
                 sb.append(equalizer);
                 sb.append(String.valueOf(viewabilityState ? 1 : 0));
+            }
+
+            //是否可视
+            String abilityArgumentResult = viewAbilityStats.get(ViewAbilityStats.ADVIEWABILITY_RESULT);
+            if (!TextUtils.isEmpty(abilityArgumentResult)) {
+                sb.append(separator);
+                sb.append(abilityArgumentResult);
+                sb.append(equalizer);
+                sb.append(String.valueOf(viewabilityState ? 1 : 4));
             }
 
             //是否可测量

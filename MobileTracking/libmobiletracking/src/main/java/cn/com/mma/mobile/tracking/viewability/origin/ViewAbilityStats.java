@@ -46,8 +46,11 @@ public class ViewAbilityStats implements Serializable {
     public static final String ADVIEWABILITY_SHOWFRAME = "AdviewabilityShowFrame";
     /* 屏幕是否点亮 2r */
     public static final String ADVIEWABILITY_LIGHT = "AdviewabilityLight";
+    public static final String ADVIEWABILITY_FORGROUND = "AdviewabilityForground";
     /* 监测可视性 2f */
     public static final String ADVIEWABILITY = "Adviewability";
+    /* 监测可视性 vx */
+    public static final String ADVIEWABILITY_RESULT = "AdviewabilityResult";
     /* 监测可测量性 2h */
     public static final String ADMEASURABILITY = "AdMeasurability";
     /* 监测轨迹数据是否上报 va */
@@ -300,6 +303,13 @@ public class ViewAbilityStats implements Serializable {
             sb.append("0");
         }
 
+        String viewabilityResult = viewabilityarguments.get(ADVIEWABILITY_RESULT);
+        if (!TextUtils.isEmpty(viewabilityResult)) {
+            sb.append(separator);
+            sb.append(viewabilityResult);
+            sb.append(equalizer);
+            sb.append("2");
+        }
 
         String measureability = viewabilityarguments.get(ADMEASURABILITY);
         if (!TextUtils.isEmpty(measureability)) {
@@ -352,6 +362,10 @@ public class ViewAbilityStats implements Serializable {
             String vblight = viewabilityarguments.get(ADVIEWABILITY_LIGHT);
             if (!TextUtils.isEmpty(vblight)) {
                 events.put(vblight, slice.getScreenOn());
+            }
+            String vbforground = viewabilityarguments.get(ADVIEWABILITY_FORGROUND);
+            if (!TextUtils.isEmpty(vbforground)) {
+                events.put(vbforground, slice.getIsForGround());
             }
         } catch (Exception e) {
             e.printStackTrace();

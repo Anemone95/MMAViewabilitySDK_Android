@@ -41,8 +41,8 @@ public class ViewFrameSlice implements Serializable {
     private int shown;
     //2r 屏幕是否点亮 1=开屏 0 = 熄灭
     private int screenOn;
-    //是否聚焦 0-1
-    //private boolean focus;
+    //2s 是否前台运行 0=后台或遮挡 1=前台
+    private int isForground;
     //2n 覆盖比例 0.00 - 1.00
     private float coverRate;
 
@@ -104,7 +104,10 @@ public class ViewFrameSlice implements Serializable {
             coverRate = (float) Math.round(temp * 100) / 100;
 
             //屏幕是否点亮
-            screenOn = (ViewHelper.isScreenOn(adView) && adView.hasWindowFocus()) ? 1 : 0;
+            screenOn = ViewHelper.isScreenOn(adView) ? 1 : 0;
+
+            //是否前台运行
+            isForground = adView.hasWindowFocus() ? 1 : 0;
 
             Rect selfRect = new Rect();
             adView.getLocalVisibleRect(selfRect);
@@ -125,6 +128,7 @@ public class ViewFrameSlice implements Serializable {
             KLog.i("[2o] adView visible Size:" + visibleSize);
             KLog.i("[2n] adView cover rate:" + coverRate);
             KLog.i("[2r] current Screen is Light:" + screenOn);
+            KLog.i("[2s] adView is forground:" + isForground);
             KLog.i("[2f] current adView visible ability:" + visibleAbility);
             KLog.i("checkFrameBounds:" + checkFrameBounds);
             KLog.i("adView isIntersets :" + isIntersets + "    overlapRect:" + overlapRect);
@@ -165,6 +169,10 @@ public class ViewFrameSlice implements Serializable {
         return screenOn;
     }
 
+    public int getIsForGround() {
+        return isForground;
+    }
+
     public float getCoverRate() {
         return coverRate;
     }
@@ -177,7 +185,7 @@ public class ViewFrameSlice implements Serializable {
      */
     public boolean validateAdVisible(float confCoverRate) {
         //被覆盖率 <= 0.5 && 显示 && 不完全透明 && 开屏
-        if (coverRate <= confCoverRate && shown == 1 && alpha > 0.001 && screenOn == 1) {
+        if (coverRate <= confCoverRate && shown == 1 && alpha > 0.001 && screenOn == 1 && isForground == 1) {
             visibleAbility = 1;
         } else {
             visibleAbility = 0;
@@ -200,6 +208,7 @@ public class ViewFrameSlice implements Serializable {
                     && Math.abs(alpha - otherSlice.alpha) < 0.001
                     && shown == otherSlice.shown
                     && screenOn == otherSlice.screenOn
+                    && isForground == otherSlice.isForground
                     && coverRate == otherSlice.coverRate) {
                 return true;
             }
@@ -346,7 +355,7 @@ public class ViewFrameSlice implements Serializable {
 
     @Override
     public String toString() {
-        return "[ 2t=" + captureTime + ",2k=" + adSize + ",2d=" + visiblePoint + ",2o=" + visibleSize + ",2n=" + coverRate + ",2l=" + alpha + ",2m=" + shown + ",2r=" + screenOn + "]";
+        return "[ 2t=" + captureTime + ",2k=" + adSize + ",2d=" + visiblePoint + ",2o=" + visibleSize + ",2n=" + coverRate + ",2l=" + alpha + ",2m=" + shown + ",2r=" + screenOn + ",2s=" + isForground + "]";
     }
 }
 
