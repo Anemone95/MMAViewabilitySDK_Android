@@ -122,6 +122,20 @@ public class AbilityWorker implements AbilityCallback {
         }
     }
 
+    /**
+     * 广告播放完，停止该工作者
+     */
+    public void stopWorker(String explorerID) {
+        ViewAbilityExplorer existExplore = explorers.get(explorerID);
+        KLog.d("stopWorker->ID:" + explorerID + " existExplore:" + existExplore);
+        //当前Work池内存在 停止并上报
+        if (existExplore != null) {
+            KLog.w("当前广告位:" + explorerID + " 存在,停止监测并UPLOAD!");
+            existExplore.stop();
+            //explorers.remove(existExplore);
+            explorers.remove(explorerID);
+        }
+    }
 
     @Override
     public void onSend(final String trackURL) {
@@ -181,8 +195,8 @@ public class AbilityWorker implements AbilityCallback {
                 }
 
                 //遍历完毕移除已经完成或失效的工作者
-                for (String adAreaID : invalidExplorers) {
-                    explorers.remove(adAreaID);
+                for (String explorerID : invalidExplorers) {
+                    explorers.remove(explorerID);
                 }
 
                 //缓存当前数据

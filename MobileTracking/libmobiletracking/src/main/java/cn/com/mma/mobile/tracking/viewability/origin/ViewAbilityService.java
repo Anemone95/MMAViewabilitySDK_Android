@@ -66,4 +66,7 @@ public class ViewAbilityService {
         }
     }
 
+    public void stopViewAbilityMonitor(String explorerID) {
+        presenter.stopViewAbilityMonitor(explorerID);
+    }
 }

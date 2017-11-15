@@ -146,6 +146,19 @@ public class Countly {
     }
 
     /**
+     * 可视化曝光监测停止接口
+     *
+     * @param adURL 要停止的监测链接
+     */
+    public void stop(String adURL) {
+        if (sIsInitialized == false || viewAbilityHandler == null) {
+            Logger.e("The method stop(...) should not be called before calling Countly.init(...)");
+            return;
+        }
+        viewAbilityHandler.stop(adURL);
+    }
+
+    /**
      * 可视化曝光JS监测接口
      * @param adURL 监测链接
      * @param adView 监测广告视图对象

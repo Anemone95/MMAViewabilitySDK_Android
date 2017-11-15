@@ -186,6 +186,14 @@ public class ViewAbilityExplorer implements Serializable {
         if (isBreak) breakToUpload();
     }
 
+    public void stop() {
+        isVideoProcessTracking = false;
+        try {
+            breakToUpload();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void breakToUpload() throws Exception {
 

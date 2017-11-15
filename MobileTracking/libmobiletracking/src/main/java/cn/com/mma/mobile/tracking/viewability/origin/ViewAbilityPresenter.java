@@ -10,5 +10,5 @@ public interface ViewAbilityPresenter {
 
     //void addViewAbilityMonitor(String adURL, View adView,String impressionID,String adAreaID);
     void addViewAbilityMonitor(Bundle bundle, View adView);
-
+    void stopViewAbilityMonitor(String explorerID);
 }

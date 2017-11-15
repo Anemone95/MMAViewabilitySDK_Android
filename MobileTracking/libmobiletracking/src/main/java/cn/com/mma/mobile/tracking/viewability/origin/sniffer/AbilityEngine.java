@@ -42,6 +42,10 @@ public class AbilityEngine implements ViewAbilityPresenter {
         engineHandler.sendMessage(message);
     }
 
+    @Override
+    public void stopViewAbilityMonitor(String explorerID) {
+        engineHandler.abilityWorker.stopWorker(explorerID);
+    }
 
     private class AbilityHandler extends Handler {
 

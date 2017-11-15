@@ -52,13 +52,20 @@ Countly.sharedInstance().onExpose(TEST_TRACKING_URL,adView);
 
 ```
 
-
 **可见性视频广告曝光监测**：当视频广告产生曝光时，控制触发以下代码进行曝光监测。第一个参数为曝光监测代码，第二个参数为当前广告展示视频视图对象。  
 **注意：对于需要监测广告可视化的视频广告监测，第二个参数（视频视图对象）为必选项，且媒体需要传入当前广告展示的视图对象，否则可能造成SDK无法监测当前视频广告可视化的情况出现**
 
 ```
 String TEST_TRACKING_URL = "http://example.com/xxxxxx";//TEST_TRACKING_URL 为对应的曝光代码  
 Countly.sharedInstance().onVideoExpose(TEST_TRACKING_URL,videoView);
+
+```
+
+**可见性广告监测停止**：当广告播放结束时，控制触发以下代码停止监测。参数为曝光监测代码。
+
+```
+String TEST_TRACKING_URL = "http://example.com/xxxxxx";//TEST_TRACKING_URL 为对应的曝光代码
+Countly.sharedInstance().stop(TEST_TRACKING_URL);
 
 ```
 

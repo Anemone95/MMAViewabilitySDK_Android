@@ -155,7 +155,29 @@ public class ViewAbilityHandler {
         handlerOriginURL(originUrl, MonitorType.VIDEOEXPOSEWITHABILITY, videoView, videoPlayType);
     }
 
+    /**
+     * 停止可视化监测
+     *
+     * @param originUrl
+     */
+    public void stop(String originUrl) {
+        //Company为空,无法停止
+        Company company = getCompany(originUrl);
+        if (company == null) {
+            Logger.w("监测链接:" + originUrl + " 没有对应的配置项,请检查sdkconfig.xml是否存在链接域名对应的Company配置!");
+            return;
+        }
 
+        String adAreaID = null;
+        try {
+            adAreaID = getAdAreaID(company, originUrl);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String explorerID = company.domain.url + adAreaID;
+        viewAbilityService.stopViewAbilityMonitor(explorerID);
+    }
 
     private void handlerOriginURL(String originUrl, MonitorType monitorType, View adView, int videoPlayType) {
 

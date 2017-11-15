@@ -149,6 +149,7 @@ public class RecordEventMessage {
 
                     long expiration = getEventExpirationTime(company, sendEvent.getTimestamp());
                     SharedPreferencedUtil.putLong(context, SharedPreferencedUtil.SP_NAME_NORMAL, resultUrl, expiration);
+//					Logger.d("sendurl: " + resultUrl);
 				} else {
 					Logger.d("domain不匹配" + hostUrl + " company.domain.url:"
 							+ company.domain.url);
