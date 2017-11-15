@@ -377,10 +377,10 @@
                 <!-- 此处需修改为第三方检测公司监测代码的 host 部分 -->
                 <url>.miaozhen.com</url>
             </domain>
-            <signature>
-                <publicKey>DbXiUlEVN</publicKey>
-                <paramKey>mf</paramKey>
-            </signature>
+            <!--<signature>-->
+                <!--<publicKey>DbXiUlEVN</publicKey>-->
+                <!--<paramKey>mf</paramKey>-->
+            <!--</signature>-->
             <switch>
                 <isTrackLocation>true</isTrackLocation>
                 <!-- 失效时间，单位秒 -->
