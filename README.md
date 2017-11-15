@@ -169,15 +169,15 @@ public class MainActivity extends Activity {
 		Log.d(TAG,  "[ViewAbilityExpose] 目标链接：" + TEST_TRACKING_URL);
 	}
 
-    /**
-     * 可视化曝光监测
-     *
-     * @param view
-     */
-    public void stopViewAbilityExpose() {
-        Countly.sharedInstance().stop(TEST_TRACKING_URL);
-        Log.d(TAG,  "[Stop ViewAbilityExpose] 目标链接：" + TEST_TRACKING_URL);
-    }
+	/**
+	 * 停止可视化曝光监测，广告播放结束时调用
+	 * 
+	 * @param tracking_url
+	 */
+	public void stopViewAbilityExpose() {
+		Countly.sharedInstance().stop(TEST_TRACKING_URL);
+		Log.d(TAG,  "[Stop ViewAbilityExpose] 目标链接：" + TEST_TRACKING_URL);
+	}
 
 	/**
 	 * 可视化曝光JS监测
