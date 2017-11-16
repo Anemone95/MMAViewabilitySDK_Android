@@ -24,6 +24,7 @@ public class AbilityEngine implements ViewAbilityPresenter {
     private Context mContext;
     private AbilityHandler engineHandler = null;
     private static final int MESSAGE_ONEXPOSE = 0x102;
+    private static final int MESSAGE_ONSTOP = 0x103;
 
     public AbilityEngine(Context context, ViewAbilityEventListener eventListener, ViewAbilityConfig viewAbilityConfig) {
         mContext = context;
@@ -44,7 +45,9 @@ public class AbilityEngine implements ViewAbilityPresenter {
 
     @Override
     public void stopViewAbilityMonitor(String explorerID) {
-        engineHandler.abilityWorker.stopWorker(explorerID);
+        Message message = engineHandler.obtainMessage(MESSAGE_ONSTOP);
+        message.obj = explorerID;
+        engineHandler.sendMessage(message);
     }
 
     private class AbilityHandler extends Handler {
@@ -71,6 +74,10 @@ public class AbilityEngine implements ViewAbilityPresenter {
                         View adView = (View) msg.obj;
                         Bundle bundle = msg.getData();
                         handlerViewAbilityMonitor(adView, bundle);
+                        break;
+                    case MESSAGE_ONSTOP:
+                        String explorerID = (String) msg.obj;
+                        abilityWorker.stopWorker(explorerID);
                         break;
                     default:
                         break;
