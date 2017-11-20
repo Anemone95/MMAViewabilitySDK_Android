@@ -28,6 +28,7 @@ import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.WindowManager;
 import cn.com.mma.mobile.tracking.api.Constant;
 
@@ -63,6 +64,27 @@ public class DeviceInfoUtil {
 	public static String getDevice() {
 		try {
 			return Build.MODEL;
+		} catch (Exception e) {
+			return "";
+		}
+	}
+
+	/**
+	 * wifiSSID
+	 *
+	 * @return
+	 */
+	public static String getWifiSSID(Context context) {
+		try {
+			ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo info = cm.getActiveNetworkInfo();
+			if (info != null && info.getType() == ConnectivityManager.TYPE_WIFI) {
+				WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+				WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+				return wifiInfo == null ? "" : wifiInfo.getSSID();
+			} else {
+				return "";
+			}
 		} catch (Exception e) {
 			return "";
 		}
@@ -443,6 +465,7 @@ public class DeviceInfoUtil {
 			params.put(Constant.TRACKING_ANDROIDID, getAndroidId(context));
 			params.put(Constant.TRACKING_OS_VERION, getOSVersion());
 			params.put(Constant.TRACKING_TERM, getDevice());
+			params.put(Constant.TRACKING_WIFISSID, getWifiSSID(context));
 			params.put(Constant.TRACKING_WIFI, isWifi(context));
 			params.put(Constant.TRACKING_NAME, getAppName(context));
 			params.put(Constant.TRACKING_KEY, getPackageName(context));

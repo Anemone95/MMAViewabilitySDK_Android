@@ -23,6 +23,7 @@ public class DeviceMessage {
     private static final String JSON_AKEY = "akey";//包名
     private static final String JSON_ANAME = "aname";//app名称
     private static final String JSON_SCWH = "scwh";
+    private static final String JSON_WIFISSID = "wifissid";
     private static final String JSON_TERM = "term";
     private static final String JSON_OSVS = "osvs";
     //private static final String JSON_LBS = "lbs";
@@ -54,6 +55,8 @@ public class DeviceMessage {
                 deviceMessage.put(JSON_SCWH, DeviceInfoUtil.getResolution(context));
 
                 deviceMessage.put(JSON_TERM, DeviceInfoUtil.getDevice());
+
+                deviceMessage.put(JSON_WIFISSID, DeviceInfoUtil.getWifiSSID(context));
 
                 deviceMessage.put(JSON_OSVS, DeviceInfoUtil.getOSVersion());
 
