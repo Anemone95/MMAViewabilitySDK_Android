@@ -30,7 +30,7 @@ public class ViewAbilityService {
     /**
      * 内部日志输出开关，0为线上环境，1为测试环境
      */
-    private static int LOG_SWITCH = 1;
+    private static int LOG_SWITCH = 0;
 
     static {
         switch (LOG_SWITCH) {

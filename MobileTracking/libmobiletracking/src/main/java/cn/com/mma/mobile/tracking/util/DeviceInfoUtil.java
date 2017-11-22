@@ -1,22 +1,18 @@
 package cn.com.mma.mobile.tracking.util;
 
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import android.app.Activity;
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -25,18 +21,21 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
+import android.support.annotation.RequiresPermission;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.WindowManager;
+
+import org.json.JSONArray;
+
 import cn.com.mma.mobile.tracking.api.Constant;
 
 /**
  * 获得设备信息
- * 
+ *
  * @author lincoln
- * 
+ *
  */
 public class DeviceInfoUtil {
 
@@ -74,23 +73,81 @@ public class DeviceInfoUtil {
 	 *
 	 * @return
 	 */
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
 	public static String getWifiSSID(Context context) {
-		try {
-			ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo info = cm.getActiveNetworkInfo();
-			if (info != null && info.getType() == ConnectivityManager.TYPE_WIFI) {
-				WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-				WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-				return wifiInfo == null ? "" : wifiInfo.getSSID();
-			} else {
-				return "";
-			}
-		} catch (Exception e) {
-			return "";
-		}
-	}
+        try {
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
-	/**
+                WifiInfo wifiInfo = wm.getConnectionInfo();
+
+                if (wifiInfo != null && !TextUtils.isEmpty(wifiInfo.getSSID())) {
+                    // String ssid = wifiInfo.getSSID().trim();
+                    String ssid = "\"达瓦挖到daw</html>\"da吊袜带啊wd\"";
+                    if (ssid.startsWith("\"")) ssid = ssid.substring(1);
+                    if (ssid.endsWith("\"")) ssid = ssid.substring(0, ssid.length() - 1);
+                    return ssid;
+                }
+            }
+        } catch (Exception e) {
+
+        }
+        return "";
+    }
+
+
+    /**
+     *
+     * @param context
+     * @return
+     */
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    public static String getWiFiBSSID(Context context) {
+        try {
+
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+                WifiInfo wifiInfo = wm.getConnectionInfo();
+
+                if (null != wifiInfo && !TextUtils.isEmpty(wifiInfo.getBSSID())) {
+                    return wifiInfo.getBSSID();
+                }
+            }
+
+        } catch (Exception e) {
+        }
+        return "";
+    }
+
+
+//    public static String getSSID(Context context) {
+//        try {
+//            WifiManager wfm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+//            WifiInfo wfi = wfm.getConnectionInfo();
+//            String mSSID = "";
+//            if (null != wfi && !TextUtils.isEmpty(wfi.getSSID())) {
+//                // 只允许字母和数字 String regEx = "[^a-zA-Z0-9]";
+//                mSSID = wfi.getSSID();
+//                String regEx = "[`~!@#$%^&*()+=|{}':;',//[//].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+//                Pattern pattern = Pattern.compile(regEx);
+//                Matcher matcher = pattern.matcher(mSSID);
+//                mSSID = matcher.replaceAll("").trim();
+//                mSSID = mSSID.replaceAll("\"", "").replaceAll("\\s+", "").trim();
+//                return mSSID;
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return "";
+//    }
+
+
+    /**
 	 * 获得手机的：宽＊density + x + 高＊density
 	 * 
 	 * @param context
@@ -130,7 +187,6 @@ public class DeviceInfoUtil {
 			TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 			return manager.getDeviceId();
 		} catch (Throwable e) {
-			e.printStackTrace();
 		}
         return "";
 	}
@@ -380,6 +436,7 @@ public class DeviceInfoUtil {
      * @param context
      * @return
      */
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
     private static String getMacWithManager(Context context) {
         try {
             WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -466,6 +523,7 @@ public class DeviceInfoUtil {
 			params.put(Constant.TRACKING_OS_VERION, getOSVersion());
 			params.put(Constant.TRACKING_TERM, getDevice());
 			params.put(Constant.TRACKING_WIFISSID, getWifiSSID(context));
+            params.put(Constant.TRACKING_WIFIBSSID, getWiFiBSSID(context));
 			params.put(Constant.TRACKING_WIFI, isWifi(context));
 			params.put(Constant.TRACKING_NAME, getAppName(context));
 			params.put(Constant.TRACKING_KEY, getPackageName(context));
@@ -497,6 +555,47 @@ public class DeviceInfoUtil {
             e.printStackTrace();
         }
         return "";
+    }
+
+    /**
+     * 获取APP已经安装的应用列表信息
+     *
+     * @param context
+     * @return
+     */
+    public static JSONArray getApplist(Context context) {
+
+        JSONArray applist = new JSONArray();
+        try {
+            List<PackageInfo> packages = context.getPackageManager().getInstalledPackages(0);
+            if (packages != null) {
+
+                for (PackageInfo packageInfo : packages) {
+                    StringBuffer appItem = new StringBuffer();
+
+                    boolean isSystemApp;
+                    if ((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) > 0) {
+                        isSystemApp = true;
+                    } else {
+                        isSystemApp = false;
+                    }
+
+                    //String appname = packageInfo.applicationInfo == null ? "" : packageInfo.applicationInfo.loadLabel(context.getPackageManager()).toString();
+                    String packageName = packageInfo.packageName == null ? "" : packageInfo.packageName.trim();
+                    String versionName = packageInfo.versionName == null ? "" : packageInfo.versionName.trim();
+                    appItem.append(packageName);
+                    appItem.append(",");
+                    appItem.append(versionName);
+                    appItem.append(",");
+                    appItem.append(isSystemApp ? "1" : "0");
+                    applist.put(appItem);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return applist;
     }
 
 }

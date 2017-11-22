@@ -3,10 +3,8 @@ package cn.com.mma.mobile.tracking.api;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
-
 import java.util.Timer;
 import java.util.TimerTask;
-
 import cn.com.mma.mobile.tracking.bean.SDK;
 import cn.com.mma.mobile.tracking.util.Logger;
 import cn.com.mma.mobile.tracking.util.SdkConfigUpdateUtil;
@@ -289,11 +287,11 @@ public class Countly {
      *
      * @param adURL 带ViewAbility监测结果的链接
      */
-    private  ViewAbilityEventListener viewAbilityEventListener = new ViewAbilityEventListener() {
+    private ViewAbilityEventListener viewAbilityEventListener = new ViewAbilityEventListener() {
         @Override
         public void onEventPresent(String adURL) {
             if (sIsInitialized && mUrildBuilder != null) {
-                mUrildBuilder.recordEventWithUrl(adURL);
+                mUrildBuilder.recordEvent(adURL);
             }
         }
     };

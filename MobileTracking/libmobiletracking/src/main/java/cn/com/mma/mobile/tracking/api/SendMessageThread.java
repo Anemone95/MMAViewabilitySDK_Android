@@ -40,75 +40,50 @@ public class SendMessageThread extends Thread {
         this.context = context;
         this.isNormalList = isNormalList;
         requestList = new HashSet<>();
-        connectUtil = ConnectUtil.getInstance(context);
+        connectUtil = ConnectUtil.getInstance();
         object = new Object();
     }
 
     @Override
-    public synchronized void run() {
+    public void run() {
         sendData();
     }
 
     private synchronized void sendData() {
         synchronized (object) {
-            Set set = SharedPreferencedUtil
-                    .getSharedPreferences(context, spName).getAll().keySet();
-            Iterator iterator = set.iterator();
+            Set eventSets = SharedPreferencedUtil.getSharedPreferences(context, spName).getAll().keySet();
+            Iterator iterator = eventSets.iterator();
             while (iterator.hasNext()) {
-                if (this.isInterruptThread)
+                //没有网络或者线程中断停止发送
+                if (isInterruptThread || !DeviceInfoUtil.isNetworkAvailable(context))
                     return;
-                if (!DeviceInfoUtil.isNetworkAvailable(context))
-                    return;
-                Long valueExpire;
-                String key;
                 try {
-                    key = (String) iterator.next();
-                    valueExpire = SharedPreferencedUtil.getLong(context,
-                            spName, key);
-//                    long failedTime = SharedPreferencedUtil.getLong(context,
-//                            SharedPreferencedUtil.SP_NAME_OTHER, key);
-                    String data = key;
-                    if (!TextUtils.isEmpty(data)) {
-                        if (valueExpire > System.currentTimeMillis()) {
+                    String eventData = (String) iterator.next();
+                    if (!TextUtils.isEmpty(eventData)) {
+                        long eventExpireTime = SharedPreferencedUtil.getLong(context, spName, eventData);
+                        if (eventExpireTime > System.currentTimeMillis()) {
 
-                            if (requestList.contains(data)) {
+                            if (requestList.contains(eventData)) {
                                 // 包含正在请求的，则不再请求
                                 return;
                             } else {
-                                requestList.add(data);
+                                requestList.add(eventData);
                             }
 
-                            HttpURLConnection httpResponse = connectUtil.getHttpURLConnection(data);
-                            if (httpResponse == null) {
-                                handleFailedResult(key, valueExpire);
+                            byte[] response = connectUtil.performGet(eventData);
+                            if (response == null) {
+                                handleFailedResult(eventData, eventExpireTime);
                                 return;
-                            }
-                            int statueCode = httpResponse.getResponseCode();
-
-                            if (statueCode == 200 || statueCode == 301 || statueCode == 302) {
-
+                            } else {
+                                handleSuccessResult(spName, eventData);
                                 //[LOCALTEST] 测试计数:记录发送成功
                                 if (Countly.LOCAL_TEST) {
                                     Intent intent = new Intent(Countly.ACTION_STATS_SUCCESSED);
                                     context.sendBroadcast(intent);
                                 }
-
-
-                                handleSuccessResult(spName, key);
-                                if (statueCode == 301 || statueCode == 302) {
-                                    // 获取重定向地址
-                                    String redirectUrl = httpResponse.getHeaderField("Location");
-                                    if (!TextUtils.isEmpty(redirectUrl)) {
-                                        connectUtil.doRequest(redirectUrl);
-                                    }
-                                }
-                            } else {
-                                handleFailedResult(key, valueExpire);
                             }
-                        } else {
-                            // 超出有效期则删除
-                            SharedPreferencedUtil.removeFromSharedPreferences(
-                                    context, spName, key);
+                        } else {//超出有效期则删除
+                            SharedPreferencedUtil.removeFromSharedPreferences(context, spName, eventData);
                         }
                     }
                 } catch (Exception e) {

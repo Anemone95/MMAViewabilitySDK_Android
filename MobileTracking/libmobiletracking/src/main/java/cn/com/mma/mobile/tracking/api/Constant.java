@@ -39,7 +39,8 @@ public class Constant {
 														// advertising id
 	public static final String TRACKING_TERM = "TERM";
 	public static final String TRACKING_WIFISSID = "WIFISSID";
-	public static final String TRACKING_IMEI = "IMEI";
+    public static final String TRACKING_WIFIBSSID = "WIFIBSSID";
+    public static final String TRACKING_IMEI = "IMEI";
 	public static final String TRACKING_ODIN = "ODIN";
 	public static final String TRACKING_MUID = "MUID";
 	public static final String TRACKING_MUDS = "MUDS";

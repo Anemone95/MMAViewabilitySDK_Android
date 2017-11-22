@@ -29,8 +29,9 @@
         <company>
 
             <name>admaster</name>
-            <!-- JS监测在线更新地址 http://developer.admaster.com.cn/docs/mma-sdk.min.js -->
+            <!-- Viewability Js方式监测 Js在线更新地址 e.g. http://xxxx.com.cn/docs/mma-sdk.js -->
             <jsurl></jsurl>
+            <!-- Viewability Js方式监测 离线js文件名称-->
             <jsname></jsname>
 
             <domain>
@@ -53,6 +54,14 @@
                     <IMEI>md5</IMEI>
                     <ANDROIDID>raw</ANDROIDID>
                 </encrypt>
+
+                <applist>
+                    <!-- applist上报地址 e.g. https:xxxx.com.cn/track/applist -->
+                    <uploadUrl></uploadUrl>
+                    <!-- applist上报时间间隔，单位为小时,配置为0时，不上报-->
+                    <uploadTime>24</uploadTime>
+                </applist>
+
             </switch>
             <config>
                 <arguments>
@@ -114,6 +123,21 @@
                         <isRequired>true</isRequired>
                     </argument>
 
+                    <!-- WiFi Name-->
+                    <argument>
+                        <key>WIFISSID</key>
+                        <value>1p</value>
+                        <urlEncode>true</urlEncode>
+                        <isRequired>true</isRequired>
+                    </argument>
+                    <!-- WiFi MAC-->
+                    <argument>
+                        <key>WIFIBSSID</key>
+                        <value>1q</value>
+                        <urlEncode>true</urlEncode>
+                        <isRequired>true</isRequired>
+                    </argument>
+
                     <argument>
                         <key>AKEY</key>
                         <value>x</value>
@@ -131,6 +155,13 @@
                     <argument>
                         <key>SCWH</key>
                         <value>0f</value>
+                        <urlEncode>true</urlEncode>
+                        <isRequired>true</isRequired>
+                    </argument>
+
+                    <argument>
+                        <key>MUDS</key>
+                        <value>0i</value>
                         <urlEncode>true</urlEncode>
                         <isRequired>true</isRequired>
                     </argument>

@@ -1,5 +1,6 @@
 package cn.com.mma.mobile.tracking.util;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -105,27 +106,28 @@ public class SdkConfigUpdateUtil {
             return null;
         }
         SDK sdk = null;
-        ConnectUtil util = ConnectUtil.getInstance(context);
-        String response = util.doRequest(configUrl);
-        // String response = getConfigFromNetWork(configUrl);
-        if (response != null) {
-            try {
-                sdk = XmlUtil.doParser(new ByteArrayInputStream(response
-                        .getBytes("UTF-8")));
-                if (sdk != null && sdk.companies != null
-                        && sdk.companies.size() > 0) {
-                    SharedPreferencedUtil.putString(context,
-                            SharedPreferencedUtil.SP_NAME_CONFIG,
-                            SharedPreferencedUtil.SP_CONFIG_KEY_FILE, response);
-                    SharedPreferencedUtil.putLong(context,
-                            SharedPreferencedUtil.SP_NAME_OTHER,
-                            SharedPreferencedUtil.SP_OTHER_KEY_UPDATE_TIME,
-                            System.currentTimeMillis());
-                    Logger.d("mma_网络更新sdkconfig.xml成功");
+
+        try {
+            byte[] buffer = ConnectUtil.getInstance().performGet(configUrl);
+            if (buffer != null) {
+                sdk = XmlUtil.doParser(new ByteArrayInputStream(buffer));
+                if (sdk != null && sdk.companies != null && sdk.companies.size() > 0) {
+                    String response = new String(buffer);
+                    if (!TextUtils.isEmpty(response)) {
+                        SharedPreferencedUtil.putString(context,
+                                SharedPreferencedUtil.SP_NAME_CONFIG,
+                                SharedPreferencedUtil.SP_CONFIG_KEY_FILE, response);
+
+                        SharedPreferencedUtil.putLong(context,
+                                SharedPreferencedUtil.SP_NAME_OTHER,
+                                SharedPreferencedUtil.SP_OTHER_KEY_UPDATE_TIME,
+                                System.currentTimeMillis());
+                        Logger.d("mma_网络更新sdkconfig.xml成功");
+                    }
                 }
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return sdk;
