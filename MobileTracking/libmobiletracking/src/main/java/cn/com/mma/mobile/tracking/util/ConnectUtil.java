@@ -23,7 +23,7 @@ import javax.net.ssl.X509TrustManager;
 
 public class ConnectUtil {
 
-    private static final String CHARSET = "UTF-8";
+    //private static final String CHARSET = "UTF-8";
     private static final String ALLOWED_URI_CHARS = "@#&=*+-_.,:!?()/~'%";
     private static final int CONNECT_TIMEOUT = 30 * 1000;
     private static final int READ_TIMEOUT = 30 * 1000;
@@ -133,21 +133,25 @@ public class ConnectUtil {
 
             int statusCode = httpConnection.getResponseCode();
 
-            if (statusCode == HttpURLConnection.HTTP_OK) {
-                is = httpConnection.getInputStream();
-                response = writeToArr(is);
-            }
 
-            //redirect
-            if (statusCode == HttpURLConnection.HTTP_MOVED_PERM || statusCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+            if (statusCode == HttpURLConnection.HTTP_OK || statusCode == HttpURLConnection.HTTP_MOVED_PERM || statusCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+
+                try {
+                    is = httpConnection.getInputStream();
+                    response = writeToArr(is);
+                } catch (Exception e) {
+                    response = new byte[]{};
+                }
+
+                //redirect
                 String redirectURL = httpConnection.getHeaderField("Location");
                 if (!TextUtils.isEmpty(redirectURL)) {
                     httpConnection = (HttpURLConnection) new URL(redirectURL).openConnection();
                     statusCode = httpConnection.getResponseCode();
+                    //Logger.d("redirect statusCode::" + statusCode);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             if (null != is)
                 try {
@@ -198,7 +202,6 @@ public class ConnectUtil {
                 response = writeToArr(is);
             }
         } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             if (null != bos) {
                 try {

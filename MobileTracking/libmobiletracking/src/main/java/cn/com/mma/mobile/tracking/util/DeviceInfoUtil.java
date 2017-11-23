@@ -84,8 +84,7 @@ public class DeviceInfoUtil {
                 WifiInfo wifiInfo = wm.getConnectionInfo();
 
                 if (wifiInfo != null && !TextUtils.isEmpty(wifiInfo.getSSID())) {
-                    // String ssid = wifiInfo.getSSID().trim();
-                    String ssid = "\"达瓦挖到daw</html>\"da吊袜带啊wd\"";
+                    String ssid = wifiInfo.getSSID().trim();
                     if (ssid.startsWith("\"")) ssid = ssid.substring(1);
                     if (ssid.endsWith("\"")) ssid = ssid.substring(0, ssid.length() - 1);
                     return ssid;

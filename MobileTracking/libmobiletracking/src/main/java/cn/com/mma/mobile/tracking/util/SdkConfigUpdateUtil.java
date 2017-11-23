@@ -1,20 +1,16 @@
 package cn.com.mma.mobile.tracking.util;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.text.TextUtils;
-
 import cn.com.mma.mobile.tracking.api.Constant;
 import cn.com.mma.mobile.tracking.bean.SDK;
 
@@ -92,7 +88,7 @@ public class SdkConfigUpdateUtil {
 			e.printStackTrace();
 		}
 		
-		Logger.d("is sdk_config.xml need Update：" + result);
+		//Logger.d("is need Update：" + result);
 		return result;
 	}
 
