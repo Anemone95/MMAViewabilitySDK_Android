@@ -522,7 +522,7 @@ public class DeviceInfoUtil {
 			params.put(Constant.TRACKING_OS_VERION, getOSVersion());
 			params.put(Constant.TRACKING_TERM, getDevice());
 			params.put(Constant.TRACKING_WIFISSID, getWifiSSID(context));
-            params.put(Constant.TRACKING_WIFIBSSID, getWiFiBSSID(context));
+			params.put(Constant.TRACKING_WIFIBSSID, getWiFiBSSID(context));
 			params.put(Constant.TRACKING_WIFI, isWifi(context));
 			params.put(Constant.TRACKING_NAME, getAppName(context));
 			params.put(Constant.TRACKING_KEY, getPackageName(context));
