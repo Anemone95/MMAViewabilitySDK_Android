@@ -23,7 +23,6 @@ public class AppListUploader {
     private static AppListUploader mInstance = null;
     private static boolean isUploading;
     private static Context mContext;
-    private static Map<String, String> deviceParams = null;
     private static final String JSON_MAC = "mac";
     private static final String JSON_IMEI = "imei";
     private static final String JSON_ANDROIDID = "androidid";
@@ -32,16 +31,15 @@ public class AppListUploader {
 
 
 
-    private AppListUploader(Context context, Map<String, String> params) {
+    private AppListUploader(Context context) {
         mContext = context;
-        deviceParams = params;
     }
 
-    public static AppListUploader getInstance(Context context, Map<String, String> params) {
+    public static AppListUploader getInstance(Context context) {
         if (mInstance == null) {
             synchronized (AppListUploader.class) {
                 if (mInstance == null) {
-                    mInstance = new AppListUploader(context, params);
+                    mInstance = new AppListUploader(context);
                 }
             }
         }
@@ -51,7 +49,7 @@ public class AppListUploader {
 
     public synchronized void sync(Company company) {
         if (isUploading) return;
-        checkApplistIsUploaded(company);
+        checkIsNeedUpload(company);
     }
 
 
@@ -61,7 +59,7 @@ public class AppListUploader {
      *
      * @param company
      */
-    private void checkApplistIsUploaded(Company company) {
+    private void checkIsNeedUpload(Company company) {
 
         Applist applistConfig = company.applist;
         if (applistConfig == null) return;
@@ -96,6 +94,8 @@ public class AppListUploader {
 
                             JSONObject json = new JSONObject();
                             JSONArray applist = DeviceInfoUtil.getApplist(mContext);
+                            Map<String, String> deviceParams = DeviceInfoUtil.getDeviceInfo(mContext);
+
                             json.put(JSON_TIME, String.valueOf(System.currentTimeMillis()));
                             json.put(JSON_MAC, CommonUtil.md5(deviceParams.get(Constant.TRACKING_MAC)));
                             json.put(JSON_IMEI, CommonUtil.md5(deviceParams.get(Constant.TRACKING_IMEI)));
@@ -119,7 +119,7 @@ public class AppListUploader {
 
                         } catch (JSONException e) {
                             e.printStackTrace();
-                        }finally {
+                        } finally {
                             isUploading = false;
                         }
 

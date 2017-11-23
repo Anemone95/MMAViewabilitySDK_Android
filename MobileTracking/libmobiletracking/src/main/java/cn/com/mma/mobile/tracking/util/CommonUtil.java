@@ -226,23 +226,20 @@ public class CommonUtil {
 	 * @param company
 	 * @return
 	 */
-	public static String encodingUTF8(String str, Argument argument,
-			Company company) {
-		try {
-			if (company.sswitch.encrypt.containsKey(argument.key)) {
-				if ("md5".equals(company.sswitch.encrypt.get(argument.key))) {
-					if ("MAC".equals(argument.key)) {
-						str = str == null ? "" : str.replaceAll(":", "");
-					}
-					str = str == null ? "" : CommonUtil.md5(str);//str.toUpperCase()--去掉大写，默认
-				}
-			}
-			if (!argument.urlEncode)
-				return str == null ? "" : str;
-			else
-				return str == null ? "" : URLEncoder.encode(str, "utf-8");
-		} catch (UnsupportedEncodingException e) {
-			return "";
-		}
-	}
+	public static String encodingUTF8(String str, Argument argument, Company company) {
+        try {
+
+            if (company.sswitch.encrypt.containsKey(argument.key)) {
+                if ("md5".equalsIgnoreCase(company.sswitch.encrypt.get(argument.key)))
+                    str = CommonUtil.md5(str);
+            }
+
+            if (!argument.urlEncode)
+                return str == null ? "" : str;
+            else
+                return str == null ? "" : URLEncoder.encode(str, "utf-8");
+        } catch (Exception e) {
+            return "";
+        }
+    }
 }

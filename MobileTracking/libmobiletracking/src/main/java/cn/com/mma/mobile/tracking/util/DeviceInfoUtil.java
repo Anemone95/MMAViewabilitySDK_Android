@@ -26,9 +26,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
-
 import org.json.JSONArray;
-
 import cn.com.mma.mobile.tracking.api.Constant;
 
 /**
@@ -504,42 +502,42 @@ public class DeviceInfoUtil {
 		}
 	}
 
-	/**
-	 * 填充设备信息
-	 * 
-	 * @param context
-	 */
-	public static Map<String, String> fulfillTrackingInfo(Context context) {
-		Map<String, String> params = new HashMap<String, String>();
-		try {
-//			params.put(Constant.TRACKING_LOCATION, LocationUtil.getInstance(context).getLocation());
-			String mac = getMacAddress(context);
-			if (mac != null) {
-				mac = mac.replaceAll(":", "").toUpperCase();
-				params.put(Constant.TRACKING_MAC, mac);
-			}
-			params.put(Constant.TRACKING_ANDROIDID, getAndroidId(context));
-			params.put(Constant.TRACKING_OS_VERION, getOSVersion());
-			params.put(Constant.TRACKING_TERM, getDevice());
-			params.put(Constant.TRACKING_WIFISSID, getWifiSSID(context));
-			params.put(Constant.TRACKING_WIFIBSSID, getWiFiBSSID(context));
-			params.put(Constant.TRACKING_WIFI, isWifi(context));
-			params.put(Constant.TRACKING_NAME, getAppName(context));
-			params.put(Constant.TRACKING_KEY, getPackageName(context));
+    private static Map<String, String> deviceInfoParams = null;
 
-			params.put(Constant.TRACKING_OS, "0");
-			params.put(Constant.TRACKING_SCWH, getResolution(context));
-			params.put(Constant.TRACKING_IMEI, getImei(context));
-			params.put(Constant.TRACKING_SDKVS, Constant.TRACKING_SDKVS_VALUE);
+    /**
+     * 获取设备信息
+     *
+     * @param context
+     * @return
+     */
+    public static Map<String, String> getDeviceInfo(Context context) {
 
-			// 新加aaid by liyun 20150330
-			params.put(Constant.TRACKING_AAID, Reflection.getPlayAdId(context));
+        if (deviceInfoParams == null) {
+            deviceInfoParams = new HashMap<>();
+            try {
+                String mac = getMacAddress(context).replace(":", "").toUpperCase();
+                deviceInfoParams.put(Constant.TRACKING_MAC, mac);
+                deviceInfoParams.put(Constant.TRACKING_ANDROIDID, getAndroidId(context));
+                deviceInfoParams.put(Constant.TRACKING_OS_VERION, getOSVersion());
+                deviceInfoParams.put(Constant.TRACKING_TERM, getDevice());
+                deviceInfoParams.put(Constant.TRACKING_NAME, getAppName(context));
+                deviceInfoParams.put(Constant.TRACKING_KEY, getPackageName(context));
+                deviceInfoParams.put(Constant.TRACKING_SCWH, getResolution(context));
+                deviceInfoParams.put(Constant.TRACKING_IMEI, getImei(context));
+                deviceInfoParams.put(Constant.TRACKING_OS, "0");
+                deviceInfoParams.put(Constant.TRACKING_SDKVS, Constant.TRACKING_SDKVS_VALUE);
+                deviceInfoParams.put(Constant.TRACKING_AAID, Reflection.getPlayAdId(context));
+            } catch (Exception e) {
+            }
+        }
+        //参数动态获取
+        String apMac = getWiFiBSSID(context).replace(":", "").toUpperCase();
+        deviceInfoParams.put(Constant.TRACKING_WIFIBSSID, apMac);
+        deviceInfoParams.put(Constant.TRACKING_WIFISSID, getWifiSSID(context));
+        deviceInfoParams.put(Constant.TRACKING_WIFI, isWifi(context));
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return params;
-	}
+        return deviceInfoParams;
+    }
 
 	/**
 	 * 从Sharedpreferenced中获取android_Id

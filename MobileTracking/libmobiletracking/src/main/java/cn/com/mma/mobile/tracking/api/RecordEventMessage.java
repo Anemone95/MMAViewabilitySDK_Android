@@ -23,7 +23,6 @@ import cn.com.mma.mobile.tracking.util.SharedPreferencedUtil;
  */
 public class RecordEventMessage {
     private final Context context;
-    private Map<String, String> params;
     private static RecordEventMessage mInstance;
 
     private RecordEventMessage(final Context context) {
@@ -31,7 +30,6 @@ public class RecordEventMessage {
             throw new NullPointerException("RecordEventMessage context can`t be null!");
         }
         this.context = context;
-        params = DeviceInfoUtil.fulfillTrackingInfo(context);
     }
 
     public static RecordEventMessage getInstance(Context ctx) {
@@ -74,6 +72,8 @@ public class RecordEventMessage {
             return;
         }
 
+        Map<String,String> deviceInfoParams = DeviceInfoUtil.getDeviceInfo(context);
+
         StringBuilder builder = new StringBuilder();
         try {
 
@@ -113,7 +113,7 @@ public class RecordEventMessage {
                     builder.append(separator);
                     builder.append(argumentValue);
                     builder.append(equalizer);
-                    builder.append(CommonUtil.md5(params.get(argumentKey)));
+                    builder.append(CommonUtil.md5(deviceInfoParams.get(argumentKey)));
                 } else if (argumentKey.equals(Constant.TRACKING_MUDS)) {
                     builder.append(separator);
                     builder.append(argumentValue);
@@ -129,13 +129,12 @@ public class RecordEventMessage {
                     builder.append(separator);
                     builder.append(argumentValue);
                     builder.append(equalizer);
-                    String apMac = params.get(argumentKey).replaceAll(":", "").toUpperCase();
-                    builder.append(CommonUtil.md5(apMac));
+                    builder.append(CommonUtil.md5(deviceInfoParams.get(argumentKey)));
                 }else {
                     builder.append(separator);
                     builder.append(argumentValue);
                     builder.append(equalizer);
-                    builder.append(CommonUtil.encodingUTF8(params.get(argumentKey), argument, company));
+                    builder.append(CommonUtil.encodingUTF8(deviceInfoParams.get(argumentKey), argument, company));
                 }
             }
 
@@ -157,11 +156,11 @@ public class RecordEventMessage {
 
         String exposeURL = builder.toString();
         long expirationTime = getEventExpirationTime(company, timestamp);
-        Logger.d(" exposeURL:" + exposeURL + "   expirationTime is:" + expirationTime);
+        //Logger.d(" exposeURL:" + exposeURL + "   expirationTime is:" + expirationTime);
         SharedPreferencedUtil.putLong(context, SharedPreferencedUtil.SP_NAME_NORMAL, exposeURL, expirationTime);
 
         //检查是否可以上报APPLIST
-        AppListUploader.getInstance(context, params).sync(company);
+        AppListUploader.getInstance(context).sync(company);
 
     }
 
