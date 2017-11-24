@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.Map;
 import cn.com.mma.mobile.tracking.api.Constant;
 import cn.com.mma.mobile.tracking.bean.Applist;
@@ -47,9 +48,9 @@ public class AppListUploader {
     }
 
 
-    public synchronized void sync(Company company) {
+    public synchronized void sync(String adURL,Company company) {
         if (isUploading) return;
-        checkIsNeedUpload(company);
+        checkIsNeedUpload(adURL, company);
     }
 
 
@@ -59,11 +60,10 @@ public class AppListUploader {
      *
      * @param company
      */
-    private void checkIsNeedUpload(Company company) {
+    private void checkIsNeedUpload(String adURL,Company company) {
 
         Applist applistConfig = company.applist;
         if (applistConfig == null) return;
-
         isUploading = true;
 
         if (!TextUtils.isEmpty(applistConfig.uploadUrl) && applistConfig.uploadTime > 0) {
@@ -79,12 +79,19 @@ public class AppListUploader {
 
             if (currentTime > (lastuploadTime + freq)) {
 
-                final String uploadURL;
+                String configURL;
                 if (applistConfig.uploadUrl.startsWith("https://") || applistConfig.uploadUrl.startsWith("http://")) {
-                    uploadURL = applistConfig.uploadUrl;
+                    configURL = applistConfig.uploadUrl;
                 } else {
-                    uploadURL = "http://" + company.domain.url + applistConfig.uploadUrl;
+                    try {
+                        URL exposeURL = new URL(adURL);
+                        configURL = exposeURL.getProtocol() + "://" + exposeURL.getHost() + applistConfig.uploadUrl;
+                    } catch (Exception e) {
+                        configURL = "http://" + company.domain.url + applistConfig.uploadUrl;
+                    }
                 }
+
+                final String uploadURL = configURL;
 
                 new Thread(new Runnable() {
                     @Override
@@ -106,10 +113,10 @@ public class AppListUploader {
                             try {
                                 encodeData = Base64.encodeToString(json.toString().getBytes("utf-8"), Base64.NO_WRAP);
                             } catch (UnsupportedEncodingException e) {
-                                e.printStackTrace();
-                                encodeData = applist.toString();
+                                encodeData = json.toString();
                             }
                             if (DeviceInfoUtil.isNetworkAvailable(mContext)) {
+
                                 byte[] response = ConnectUtil.getInstance().performPost(uploadURL, encodeData);
                                 if (response != null) {
                                     //update lastuploadtime
@@ -118,7 +125,6 @@ public class AppListUploader {
                             }
 
                         } catch (JSONException e) {
-                            e.printStackTrace();
                         } finally {
                             isUploading = false;
                         }

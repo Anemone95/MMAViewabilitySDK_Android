@@ -39,16 +39,13 @@ public class DeviceMessage {
 
                 deviceMessage.put(JSON_OS, "0");
 
-                String mac = DeviceInfoUtil.getMacAddress(context);
-                if (!TextUtils.isEmpty(mac)) mac = mac.replaceAll(":", "").toUpperCase();
+                String mac = DeviceInfoUtil.getMacAddress(context).replaceAll(":", "").toUpperCase();
 
                 deviceMessage.put(JSON_MAC, CommonUtil.md5(mac));
 
                 deviceMessage.put(JSON_IMEI, DeviceInfoUtil.getImei(context));
 
                 deviceMessage.put(JSON_ANDROIDID, DeviceInfoUtil.getAndroidId(context));
-
-                deviceMessage.put(JSON_WIFI, DeviceInfoUtil.isWifi(context));
 
                 deviceMessage.put(JSON_AKEY, DeviceInfoUtil.getPackageName(context));//AKEY=packagename
                 deviceMessage.put(JSON_ANAME, DeviceInfoUtil.getAppName(context));//ANAME=appname
@@ -57,18 +54,23 @@ public class DeviceMessage {
 
                 deviceMessage.put(JSON_TERM, DeviceInfoUtil.getDevice());
 
-                deviceMessage.put(JSON_WIFISSID, DeviceInfoUtil.getWifiSSID(context));
-                deviceMessage.put(JSON_WIFIBSSID,DeviceInfoUtil.getWiFiBSSID(context));
-
                 deviceMessage.put(JSON_OSVS, DeviceInfoUtil.getOSVersion());
-
-                //deviceMessage.put(JSON_LBS, "");
 
                 deviceMessage.put(JSON_SDKV, Constant.TRACKING_SDKVS_VALUE);//跟随SDK
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            try {
+                deviceMessage.put(JSON_WIFI, DeviceInfoUtil.isWifi(context));
+                deviceMessage.put(JSON_WIFISSID, DeviceInfoUtil.getWifiSSID(context));
+                String apMac = DeviceInfoUtil.getWiFiBSSID(context).replace(":", "").toUpperCase();
+                deviceMessage.put(JSON_WIFIBSSID, apMac);
+            } catch (Exception e) {
+
+            }
+
         }
 
         return deviceMessage;

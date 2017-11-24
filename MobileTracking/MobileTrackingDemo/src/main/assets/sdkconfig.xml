@@ -52,7 +52,7 @@
                     <MAC>md5</MAC>
                     <IDA>md5</IDA>
                     <IMEI>md5</IMEI>
-                    <ANDROIDID>raw</ANDROIDID>
+                    <ANDROIDID>md5</ANDROIDID>
                 </encrypt>
 
                 <applist>

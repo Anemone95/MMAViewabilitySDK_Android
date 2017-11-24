@@ -120,7 +120,7 @@ public class XmlUtil {
                             if ("encrypt".equals(elementName))
                                 company.sswitch.encrypt = new HashMap<>();
                             if (company.sswitch.encrypt != null) {
-                                if ("MAC".equals(elementName) || "IDA".equals(elementName) || "IMEI".equals(elementName) || "ANDROID".equals(elementName))
+                                if ("MAC".equals(elementName) || "IDA".equals(elementName) || "IMEI".equals(elementName) || "ANDROIDID".equals(elementName))
                                     company.sswitch.encrypt.put(elementName, parser.nextText());
                             }
                         }

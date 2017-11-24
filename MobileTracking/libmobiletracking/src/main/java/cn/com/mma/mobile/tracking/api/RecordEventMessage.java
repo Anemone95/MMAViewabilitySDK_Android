@@ -160,7 +160,7 @@ public class RecordEventMessage {
         SharedPreferencedUtil.putLong(context, SharedPreferencedUtil.SP_NAME_NORMAL, exposeURL, expirationTime);
 
         //检查是否可以上报APPLIST
-        AppListUploader.getInstance(context).sync(company);
+        AppListUploader.getInstance(context).sync(originURL, company);
 
     }
 
