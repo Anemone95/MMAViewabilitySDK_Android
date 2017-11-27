@@ -21,7 +21,7 @@ public class ViewAbilityMessage {
     private static final String ADVIEWABILITY_FRAME = "AdviewabilityFrame";
     private static final String ADVIEWABILITY_POINT = "AdviewabilityPoint";
     private static final String ADVIEWABILITY_ALPHA = "AdviewabilityAlpha";
-    private static final String ADVIEWABILITY_HIDE = "AdviewabilityHide";
+    private static final String ADVIEWABILITY_SHOWN = "AdviewabilityShown";
     private static final String ADVIEWABILITY_COVERRATE = "AdviewabilityCoverRate";
     private static final String ADVIEWABILITY_SHOWFRAME = "AdviewabilityShowFrame";
     private static final String ADVIEWABILITY_LIGHT = "AdviewabilityLight";
@@ -61,8 +61,8 @@ public class ViewAbilityMessage {
             alpha = adView.getAlpha();
         }
 
-        //是否被隐藏
-        int hidden = (adView.getVisibility() == View.VISIBLE) ? 1 : 0;
+        //是否显示 显示=1 不显示=0
+        int shown = (adView.isShown()) ? 1 : 0;
 
         String visibleSize = "";
         float coverRate = 0.0f;
@@ -90,7 +90,7 @@ public class ViewAbilityMessage {
             jsonObject.put(ADVIEWABILITY_FRAME, adSize);
             jsonObject.put(ADVIEWABILITY_POINT, visiblePoint);
             jsonObject.put(ADVIEWABILITY_ALPHA, String.valueOf(alpha));
-            jsonObject.put(ADVIEWABILITY_HIDE, String.valueOf(hidden));
+            jsonObject.put(ADVIEWABILITY_SHOWN, String.valueOf(shown));
             jsonObject.put(ADVIEWABILITY_SHOWFRAME, visibleSize);
             jsonObject.put(ADVIEWABILITY_COVERRATE, String.valueOf(coverRate));
             jsonObject.put(ADVIEWABILITY_LIGHT, String.valueOf(screenOn));

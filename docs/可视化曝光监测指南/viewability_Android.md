@@ -37,7 +37,7 @@ Countly.sharedInstance().init(this, CONFIG_URL);
 **普通广告曝光监测**：当广告产生曝光时，控制触发以下代码进行曝光监测。
 
 ```
-String TEST_TRACKING_URL = "http://admaster.mobi/android/log/a222,c123,b132,2g[ImpressionID]";//TEST_TRACKING_URL 为对应的曝光代码  
+String TEST_TRACKING_URL = "http://example.com/xxxxxx";//TEST_TRACKING_URL 为对应的曝光代码  
 Countly.sharedInstance().onExpose(TEST_TRACKING_URL);
 
 ```
@@ -46,25 +46,27 @@ Countly.sharedInstance().onExpose(TEST_TRACKING_URL);
 **注意：对于需要监测广告可视化的广告监测，第二个参数（广告视图对象）为必选项，且媒体需要传入当前广告展示的视图对象，否则可能造成SDK无法监测当前广告可视化的情况出现**
 
 ```
-String TEST_TRACKING_URL = "http://admaster.mobi/android/log/a222,c123,b132,2g[ImpressionID]";//TEST_TRACKING_URL 为对应的曝光代码  
+String TEST_TRACKING_URL = "http://example.com/xxxxxx";//TEST_TRACKING_URL 为对应的曝光代码  
 Countly.sharedInstance().onExpose(TEST_TRACKING_URL,adView);
 
 ```
 
 
-**可见性视频广告曝光监测**：当视频广告产生曝光时，控制触发以下代码进行曝光监测。第一个参数为曝光监测代码，第二个参数为当前广告展示视频视图对象。  
-**注意：对于需要监测广告可视化的视频广告监测，第二个参数（视频视图对象）为必选项，且媒体需要传入当前广告展示的视图对象，否则可能造成SDK无法监测当前视频广告可视化的情况出现**
+**可见性视频广告曝光监测**：当视频广告产生曝光时，控制触发以下代码进行曝光监测。第一个参数为曝光监测代码，第二个参数为当前广告展示视频视图对象，第三个参数为当前广告的播放类型。  
+**注意：对于需要监测广告可视化的视频广告监测，第二个参数（视频视图对象）为必选项，且媒体需要传入当前广告展示的视图对象，否则可能造成SDK无法监测当前视频广告可视化的情况出现，第三个参数（视频播放类型）为可选项，1-自动播放，2-手动播放，0-无法识别**
 
 ```
-String TEST_TRACKING_URL = "http://admaster.mobi/android/log/a222,c123,b132,2g[ImpressionID]";//TEST_TRACKING_URL 为对应的曝光代码  
-Countly.sharedInstance().onVideoExpose(TEST_TRACKING_URL,videoView);
+String TEST_TRACKING_URL = "http://example.com/xxxxxx";//TEST_TRACKING_URL 为对应的曝光代码  
+Countly.sharedInstance().onVideoExpose(TEST_TRACKING_URL,videoView); 或
+Countly.sharedInstance().onVideoExpose(TEST_TRACKING_URL,videoView,videoPlayType);
+
 
 ```
 
 **可见性广告曝光JS监测**：当广告产生曝光时，控制触发以下代码使用JS方案进行曝光监测。第一个参数为曝光监测代码，第二个参数为当前广告展示视图对象。  
 
 ```
-String TEST_TRACKING_URL = "http://admaster.mobi/android/log/a222,c123,b132,2g[ImpressionID]";//TEST_TRACKING_URL 为对应的曝光代码  
+String TEST_TRACKING_URL = "http://example.com/xxxxxx";//TEST_TRACKING_URL 为对应的曝光代码  
 Countly.sharedInstance().onJsExpose(TEST_TRACKING_URL,adView);
 
 ```
@@ -74,7 +76,7 @@ Countly.sharedInstance().onJsExpose(TEST_TRACKING_URL,adView);
 **可见性视频广告曝光JS监测**：当视频广告产生曝光时，控制触发以下代码使用JS方案进行曝光监测，第一个参数为曝光监测代码，第二个参数为当前广告展示视频视图对象。
 
 ```
-String TEST_TRACKING_URL = "http://admaster.mobi/android/log/a222,c123,b132,";//TEST_TRACKING_URL 为对应的曝光代码
+String TEST_TRACKING_URL = "http://example.com/xxxxxx";//TEST_TRACKING_URL 为对应的曝光代码
 Countly.sharedInstance().onVideoJsExpose(TEST_TRACKING_URL,videoView); 
 
 ```
@@ -84,7 +86,7 @@ Countly.sharedInstance().onVideoJsExpose(TEST_TRACKING_URL,videoView);
 **广告点击监测**：当广告被点击时，控制触发以下代码
 
 ```
-String TEST_TRACKING_URL = "http://admaster.mobi/android/log/a222,c123,b132,";//TEST_TRACKING_URL 为对应的曝光代码
+String TEST_TRACKING_URL = "http://example.com/xxxxxx";//TEST_TRACKING_URL 为对应的曝光代码
 Countly.sharedInstance().onClick(TEST_TRACKING_URL); 
 
 ```
@@ -102,7 +104,7 @@ import cn.com..mobile.tracking.util.Logger;
 /**
  * 此工程是为使用SDK的用户提供的demo
  * 
- * @author admaster
+ * @author mma
  * 
  */
 public class MainActivity extends Activity {
@@ -110,11 +112,11 @@ public class MainActivity extends Activity {
 /**
  * sdkconfig.xml配置文件服务器存放地址
  */
- public static final String CONFIG_URL = "http://admaster.mobi/sdkconfig.xml";
+ public static final String CONFIG_URL = "http://example.com/sdkconfig.xml";
  /**
  * 点击监测地址
  */
- public static final String TEST_TRACKING_URL = "http://admaster.mobi/android/log/a222,c123,b132,";
+ public static final String TEST_TRACKING_URL = "http://example.com/xxxxxx";
 @Override
  protected void onCreate(Bundle savedInstanceState) {
  super.onCreate(savedInstanceState);
@@ -140,7 +142,8 @@ public class MainActivity extends Activity {
  * 视频曝光广告，开启监测
  */
  public void sendVideoExposeMsg(View videoView) {
- Countly.sharedInstance().onVideoExpose(TEST_TRACKING_URL, videoView);
+ Countly.sharedInstance().onVideoExpose(TEST_TRACKING_URL, videoView); //或
+ Countly.sharedInstance().onVideoExpose(TEST_TRACKING_URL, videoView, videoPlayType);
  } 
 }
 ```
@@ -149,7 +152,5 @@ SDK 的测试有两个方面：
  
  1. 参数是否齐全，URL 拼接方式是否正确
  2. 请求次数和第三方监测平台是否能对应上
-针对第一点，使用 Admaster SDK 测试平台进行测试和验证，登入 http://developer.admaster.com.cn/, 根据页面上的提示进行调用， 页面会实时显示出服务器接收到的信息，如果和本地的设备相关信息一致，则表示测试通过。
 
-针对第二点，建议使用第三方监测系统的正式环境进行测试，主要对比媒体自身广告系统监测数据和第三方监测数据数量上的差异。
-
+请联系第三方监测平台完成测试

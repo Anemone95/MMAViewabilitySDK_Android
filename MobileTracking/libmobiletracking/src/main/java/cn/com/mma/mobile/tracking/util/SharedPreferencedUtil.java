@@ -30,10 +30,10 @@ public class SharedPreferencedUtil {
 	 * SP_NAME_OTHER 上次更新时间key
 	 */
 	public static final String SP_OTHER_KEY_UPDATE_TIME = "updateTime";
-	/**
-	 * SP_NAME_OTHER Android_Id
-	 */
-	public final static String SP_OTHER_KEY_ANDROID_ID = "android_id";
+
+    /**SP_NAME_OTHER */
+    public static final String SP_OTHER_KEY_LASTUPLOADTIME_SUFFIX = "_uploadtime";
+
 
 	/**
 	 * 向SP中写数据

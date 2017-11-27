@@ -1,6 +1,7 @@
 package cn.com.mma.mobile.tracking.viewability.webjs;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import cn.com.mma.mobile.tracking.api.Countly;
 import cn.com.mma.mobile.tracking.bean.Company;
 import cn.com.mma.mobile.tracking.util.Logger;
 import cn.com.mma.mobile.tracking.util.klog.KLog;
@@ -27,7 +29,7 @@ import cn.com.mma.mobile.tracking.util.klog.KLog;
 /**
  * 每一个ViewAbilityJsExplorer实体相当于一个WebView对象,同一个公司检测下只存在一个,KEY = Company.NAME
  * 同一Company下如果同时存在多个监测,在各自Explorer内循环执行
- * Created by admaster on 17/7/28.
+ * Created by mma on 17/7/28.
  */
 public class ViewAbilityJsExplorer {
 
@@ -41,8 +43,8 @@ public class ViewAbilityJsExplorer {
     private DataCacheManager dataCacheManager;
     private String companyName;
 
-    private static final String JS_INTERFACE_SENDMESSAGE = "javascript:MMASDK.sendViewabilityMessage";
-    private static final String JS_INTERFACE_SENDCACHEMESSAGE = "javascript:MMASDK.sendCacheMessage";
+    private static final String JS_INTERFACE_SENDMESSAGE = "javascript:sendViewabilityMessage";
+    private static final String JS_INTERFACE_SENDCACHEMESSAGE = "javascript:sendCacheMessage";
 
 
     private static final String JS_SCHEME = "mmaViewabilitySDK";
@@ -70,38 +72,42 @@ public class ViewAbilityJsExplorer {
 
 
     private void initWebViews() {
-        mWebView = new WebView(mContext);
-        WebSettings ws = mWebView.getSettings();
-        try {
-            ws.setJavaScriptEnabled(true);
-            //ws.setPluginState(WebSettings.PluginState.ON);
-            ws.setJavaScriptCanOpenWindowsAutomatically(false);
-            //ws.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
-            ws.setDomStorageEnabled(false);
-            ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
-            ws.setAllowFileAccess(false);
-            ws.setAppCacheEnabled(false);
-            // 以下两条设置可以使页面适应手机屏幕的分辨率，完整的显示在屏幕上
-            // 设置是否使用WebView推荐使用的窗口
-            ws.setUseWideViewPort(false);
-            // 设置WebView加载页面的模式
-            ws.setLoadWithOverviewMode(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        mWebView.clearHistory();
-        mWebView.clearCache(true);
-        isJavaScriptEnabled = ws.getJavaScriptEnabled();
-        //mWebView.setWebChromeClient(new MyWebChromeClient());
-        mWebView.setWebViewClient(new MyWebViewClient());
 
-        //初始化时加载空白HTML网页
-        initJavaScripts();
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mWebView = new WebView(mContext);
+                WebSettings ws = mWebView.getSettings();
+                try {
+                    ws.setJavaScriptEnabled(true);
+                    //ws.setPluginState(WebSettings.PluginState.ON);
+                    ws.setJavaScriptCanOpenWindowsAutomatically(false);
+                    //ws.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+                    ws.setDomStorageEnabled(false);
+                    ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
+                    ws.setAllowFileAccess(false);
+                    ws.setAppCacheEnabled(false);
+                    // 以下两条设置可以使页面适应手机屏幕的分辨率，完整的显示在屏幕上
+                    // 设置是否使用WebView推荐使用的窗口
+                    ws.setUseWideViewPort(false);
+                    // 设置WebView加载页面的模式
+                    ws.setLoadWithOverviewMode(false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                mWebView.clearHistory();
+                mWebView.clearCache(true);
+                isJavaScriptEnabled = ws.getJavaScriptEnabled();
+                //mWebView.setWebChromeClient(new MyWebChromeClient());
+                mWebView.setWebViewClient(new MyWebViewClient());
 
+                //初始化时加载空白HTML网页
+                initJavaScripts();
+            }
+        });
     }
 
     private void initJavaScripts() {
-
 
         String content = String.format("<!DOCTYPE html>\n<html>\n<head lang=\"en\">\n    <meta charset=\"UTF-8\">\n  <title></title>\n</head>\n<body style=\"margin:0;padding:0;\">\n  <div id=\"mian\" style=\"width:%dpx;height:%dpx;\">\n <script type=\"text/javascript\">%s</script>\n</div>\n</body>\n</html>", 1, 1, bridgeJs);
 
@@ -115,10 +121,10 @@ public class ViewAbilityJsExplorer {
     public void addExplorerTask(String adURL, View adView, boolean isVideo) {
 
 
-        if (!isJavaScriptEnabled) {
-            Logger.e("JavaScript is not enable in current WebView,the current monitoring scheme is not available.");
-            return;
-        }
+//        if (!isJavaScriptEnabled) {
+//            Logger.e("JavaScript is not enable in current WebView,the current monitoring scheme is not available.");
+//            return;
+//        }
 
         //如果JS为空,则在线获取一次
         if (TextUtils.isEmpty(bridgeJs)) {
@@ -130,6 +136,13 @@ public class ViewAbilityJsExplorer {
         monitorWorkers.put(abilityJsBean.getAdviewabilityId(), abilityJsBean);
 
         Logger.d("URL:" + adURL + " 开启View Ability JS 监测,监测ID:" + abilityJsBean.getAdviewabilityId());
+
+        //[LOCALTEST] 测试计数:带ViewAbility曝光事件产生计数
+        if (Countly.LOCAL_TEST) {
+            Intent intent = new Intent(Countly.ACTION_STATS_VIEWABILITY);
+            mContext.sendBroadcast(intent);
+        }
+
     }
 
 
@@ -182,7 +195,8 @@ public class ViewAbilityJsExplorer {
 
 
                         if (eventArr.length() > 0) {
-                            String fire = String.format(JS_INTERFACE_SENDMESSAGE + "(JSON.stringify(%s))", eventArr.toString());
+                            String fire = String.format(JS_INTERFACE_SENDMESSAGE + "(%s)", eventArr.toString());
+                            //String fire = String.format(JS_INTERFACE_SENDMESSAGE + "(JSON.stringify(%s))", eventArr.toString());
                             //KLog.i("onExplore", "fire:" + fire);
                             mWebView.loadUrl(fire);
                         }
@@ -294,6 +308,12 @@ public class ViewAbilityJsExplorer {
             }
             ViewAbilityJsBean abilityJsBean = monitorWorkers.get(adviewabilityid);
             if (abilityJsBean != null) abilityJsBean.setCompleted(true);
+
+            //[LOCALTEST] 测试计数:记录发送成功
+            if (Countly.LOCAL_TEST) {
+                Intent intent = new Intent(Countly.ACTION_STATS_SUCCESSED);
+                mContext.sendBroadcast(intent);
+            }
         }
 
         /**

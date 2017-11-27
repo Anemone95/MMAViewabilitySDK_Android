@@ -5,15 +5,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.text.TextUtils;
-
 import cn.com.mma.mobile.tracking.api.Constant;
 import cn.com.mma.mobile.tracking.bean.SDK;
 
@@ -91,7 +88,7 @@ public class SdkConfigUpdateUtil {
 			e.printStackTrace();
 		}
 		
-		Logger.d("is sdk_config.xml need Update：" + result);
+		//Logger.d("is need Update：" + result);
 		return result;
 	}
 
@@ -105,27 +102,28 @@ public class SdkConfigUpdateUtil {
             return null;
         }
         SDK sdk = null;
-        ConnectUtil util = ConnectUtil.getInstance(context);
-        String response = util.doRequest(configUrl);
-        // String response = getConfigFromNetWork(configUrl);
-        if (response != null) {
-            try {
-                sdk = XmlUtil.doParser(new ByteArrayInputStream(response
-                        .getBytes("UTF-8")));
-                if (sdk != null && sdk.companies != null
-                        && sdk.companies.size() > 0) {
-                    SharedPreferencedUtil.putString(context,
-                            SharedPreferencedUtil.SP_NAME_CONFIG,
-                            SharedPreferencedUtil.SP_CONFIG_KEY_FILE, response);
-                    SharedPreferencedUtil.putLong(context,
-                            SharedPreferencedUtil.SP_NAME_OTHER,
-                            SharedPreferencedUtil.SP_OTHER_KEY_UPDATE_TIME,
-                            System.currentTimeMillis());
-                    Logger.d("mma_网络更新sdkconfig.xml成功");
+
+        try {
+            byte[] buffer = ConnectUtil.getInstance().performGet(configUrl);
+            if (buffer != null) {
+                sdk = XmlUtil.doParser(new ByteArrayInputStream(buffer));
+                if (sdk != null && sdk.companies != null && sdk.companies.size() > 0) {
+                    String response = new String(buffer);
+                    if (!TextUtils.isEmpty(response)) {
+                        SharedPreferencedUtil.putString(context,
+                                SharedPreferencedUtil.SP_NAME_CONFIG,
+                                SharedPreferencedUtil.SP_CONFIG_KEY_FILE, response);
+
+                        SharedPreferencedUtil.putLong(context,
+                                SharedPreferencedUtil.SP_NAME_OTHER,
+                                SharedPreferencedUtil.SP_OTHER_KEY_UPDATE_TIME,
+                                System.currentTimeMillis());
+                        Logger.d("mma_网络更新sdkconfig.xml成功");
+                    }
                 }
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return sdk;

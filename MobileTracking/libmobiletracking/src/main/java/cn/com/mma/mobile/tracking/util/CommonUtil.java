@@ -101,12 +101,10 @@ public class CommonUtil {
 
 	/**
 	 * 根据正则表达式匹配字符串，并返回结果。匹配格式如下：
-	 * 原网址：http://c.admaster.com.cn/c/a16239,b200293157,c1851,i0,m101,h
-	 * 返回值：http://c.admaster.com.cn
-	 * 
+	 *
 	 * 原网址：http://192.168.2.192:8080/untitled3/test/test/a123,c123,b123
 	 * 返回值：http://192.168.2.192
-	 * 
+	 *
 	 * @param url
 	 * @return
 	 */
@@ -228,23 +226,20 @@ public class CommonUtil {
 	 * @param company
 	 * @return
 	 */
-	public static String encodingUTF8(String str, Argument argument,
-			Company company) {
-		try {
-			if (company.sswitch.encrypt.containsKey(argument.key)) {
-				if ("md5".equals(company.sswitch.encrypt.get(argument.key))) {
-					if ("MAC".equals(argument.key)) {
-						str = str == null ? "" : str.replaceAll(":", "");
-					}
-					str = str == null ? "" : CommonUtil.md5(str);//str.toUpperCase()--去掉大写，默认
-				}
-			}
-			if (!argument.urlEncode)
-				return str == null ? "" : str;
-			else
-				return str == null ? "" : URLEncoder.encode(str, "utf-8");
-		} catch (UnsupportedEncodingException e) {
-			return "";
-		}
-	}
+	public static String encodingUTF8(String str, Argument argument, Company company) {
+        try {
+
+            if (company.sswitch.encrypt.containsKey(argument.key)) {
+                if ("md5".equalsIgnoreCase(company.sswitch.encrypt.get(argument.key)))
+                    str = CommonUtil.md5(str);
+            }
+
+            if (!argument.urlEncode)
+                return str == null ? "" : str;
+            else
+                return str == null ? "" : URLEncoder.encode(str, "utf-8");
+        } catch (Exception e) {
+            return "";
+        }
+    }
 }

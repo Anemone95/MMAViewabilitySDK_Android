@@ -38,6 +38,8 @@ public class Constant {
 	public static final String TRACKING_AAID = "AAID";// 新加android google
 														// advertising id
 	public static final String TRACKING_TERM = "TERM";
+	public static final String TRACKING_WIFISSID = "WIFISSID";
+	public static final String TRACKING_WIFIBSSID = "WIFIBSSID";
 	public static final String TRACKING_IMEI = "IMEI";
 	public static final String TRACKING_ODIN = "ODIN";
 	public static final String TRACKING_MUID = "MUID";
@@ -47,7 +49,6 @@ public class Constant {
 
 	public static final String TRACKING_SDKVS = "SDKVS";
 	public static final String TRACKING_SDKVS_VALUE = "V2.0.0";
-	
 
 	/**
 	 * 新版常量 Begin

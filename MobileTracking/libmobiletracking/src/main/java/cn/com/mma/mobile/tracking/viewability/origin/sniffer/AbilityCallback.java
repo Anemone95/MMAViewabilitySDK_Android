@@ -2,10 +2,15 @@ package cn.com.mma.mobile.tracking.viewability.origin.sniffer;
 
 
 /**
- * Created by admaster on 17/6/19.
+ * Created by mma on 17/6/19.
  */
 public interface AbilityCallback {
 
-    void onViewAbilityFinished(String adAreaID, String abilityUrl);
+
+    /* 触发MMA 曝光监测 */
+    void onSend(String trackURL);
+
+    /* 移除监测任务 */
+    void onFinished(String taskID);
 
 }

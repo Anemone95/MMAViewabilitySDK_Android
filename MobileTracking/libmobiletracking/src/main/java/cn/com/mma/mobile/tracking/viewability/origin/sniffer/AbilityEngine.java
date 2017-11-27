@@ -14,7 +14,7 @@ import cn.com.mma.mobile.tracking.util.klog.KLog;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityEventListener;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityPresenter;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityService;
-import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStatsResult;
+import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStats;
 
 
 /**
@@ -24,6 +24,7 @@ public class AbilityEngine implements ViewAbilityPresenter {
     private Context mContext;
     private AbilityHandler engineHandler = null;
     private static final int MESSAGE_ONEXPOSE = 0x102;
+    private static final int MESSAGE_ONSTOP = 0x103;
 
     public AbilityEngine(Context context, ViewAbilityEventListener eventListener, ViewAbilityConfig viewAbilityConfig) {
         mContext = context;
@@ -42,6 +43,12 @@ public class AbilityEngine implements ViewAbilityPresenter {
         engineHandler.sendMessage(message);
     }
 
+    @Override
+    public void stopViewAbilityMonitor(String explorerID) {
+        Message message = engineHandler.obtainMessage(MESSAGE_ONSTOP);
+        message.obj = explorerID;
+        engineHandler.sendMessage(message);
+    }
 
     private class AbilityHandler extends Handler {
 
@@ -68,6 +75,10 @@ public class AbilityEngine implements ViewAbilityPresenter {
                         Bundle bundle = msg.getData();
                         handlerViewAbilityMonitor(adView, bundle);
                         break;
+                    case MESSAGE_ONSTOP:
+                        String explorerID = (String) msg.obj;
+                        abilityWorker.stopWorker(explorerID);
+                        break;
                     default:
                         break;
                 }
@@ -88,10 +99,10 @@ public class AbilityEngine implements ViewAbilityPresenter {
             }
             String adURL = bundle.getString(ViewAbilityService.BUNDLE_ADURL);
             String impressionID = bundle.getString(ViewAbilityService.BUNDLE_IMPRESSIONID);
-            String adAreaID = bundle.getString(ViewAbilityService.BUNDLE_ADAREAID);
-            ViewAbilityStatsResult result = (ViewAbilityStatsResult) bundle.getSerializable(ViewAbilityService.BUNDLE_VBRESULT);
+            String explorerID = bundle.getString(ViewAbilityService.BUNDLE_EXPLORERID);
+            ViewAbilityStats result = (ViewAbilityStats) bundle.getSerializable(ViewAbilityService.BUNDLE_VBRESULT);
 
-            abilityWorker.addWorker(adURL, adView, impressionID, adAreaID, result);
+            abilityWorker.addWorker(adURL, adView, impressionID, explorerID, result);
         }
     }
 

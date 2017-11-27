@@ -8,7 +8,7 @@ import cn.com.mma.mobile.tracking.util.CommonUtil;
 import cn.com.mma.mobile.tracking.util.DeviceInfoUtil;
 
 /**
- * Created by admaster on 17/7/30.
+ * Created by mma on 17/7/30.
  */
 public class DeviceMessage {
 
@@ -23,6 +23,8 @@ public class DeviceMessage {
     private static final String JSON_AKEY = "akey";//包名
     private static final String JSON_ANAME = "aname";//app名称
     private static final String JSON_SCWH = "scwh";
+    private static final String JSON_WIFISSID = "wifissid";
+    private static final String JSON_WIFIBSSID = "wifibssid";
     private static final String JSON_TERM = "term";
     private static final String JSON_OSVS = "osvs";
     //private static final String JSON_LBS = "lbs";
@@ -37,16 +39,13 @@ public class DeviceMessage {
 
                 deviceMessage.put(JSON_OS, "0");
 
-                String mac = DeviceInfoUtil.getMacAddress(context);
-                if (!TextUtils.isEmpty(mac)) mac = mac.replaceAll(":", "").toUpperCase();
+                String mac = DeviceInfoUtil.getMacAddress(context).replaceAll(":", "").toUpperCase();
 
                 deviceMessage.put(JSON_MAC, CommonUtil.md5(mac));
 
                 deviceMessage.put(JSON_IMEI, DeviceInfoUtil.getImei(context));
 
                 deviceMessage.put(JSON_ANDROIDID, DeviceInfoUtil.getAndroidId(context));
-
-                deviceMessage.put(JSON_WIFI, DeviceInfoUtil.isWifi(context));
 
                 deviceMessage.put(JSON_AKEY, DeviceInfoUtil.getPackageName(context));//AKEY=packagename
                 deviceMessage.put(JSON_ANAME, DeviceInfoUtil.getAppName(context));//ANAME=appname
@@ -57,13 +56,21 @@ public class DeviceMessage {
 
                 deviceMessage.put(JSON_OSVS, DeviceInfoUtil.getOSVersion());
 
-                //deviceMessage.put(JSON_LBS, "");
-
                 deviceMessage.put(JSON_SDKV, Constant.TRACKING_SDKVS_VALUE);//跟随SDK
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            try {
+                deviceMessage.put(JSON_WIFI, DeviceInfoUtil.isWifi(context));
+                deviceMessage.put(JSON_WIFISSID, DeviceInfoUtil.getWifiSSID(context));
+                String apMac = DeviceInfoUtil.getWiFiBSSID(context).replace(":", "").toUpperCase();
+                deviceMessage.put(JSON_WIFIBSSID, apMac);
+            } catch (Exception e) {
+
+            }
+
         }
 
         return deviceMessage;

@@ -3,7 +3,7 @@ package cn.com.mma.mobile.tracking.bean;
 /**
  * 对应sdkconfig.xml文件中的<company>标签
  * 
- * @author lincoln
+ * @author MMAChinaSDK
  */
 public class Company {
 	public String name;
@@ -16,5 +16,6 @@ public class Company {
 	public String separator;
 	public String equalizer;
 	public boolean timeStampUseSecond;
+    public Applist applist;
 
 }
