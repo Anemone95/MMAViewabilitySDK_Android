@@ -64,7 +64,6 @@ public class AppListUploader {
 
         Applist applistConfig = company.applist;
         if (applistConfig == null) return;
-        isUploading = true;
 
         if (!TextUtils.isEmpty(applistConfig.uploadUrl) && applistConfig.uploadTime > 0) {
 
@@ -80,6 +79,9 @@ public class AppListUploader {
             if (currentTime > (lastuploadTime + freq)) {
 
                 String configURL;
+
+                isUploading = true;
+
                 if (applistConfig.uploadUrl.startsWith("https://") || applistConfig.uploadUrl.startsWith("http://")) {
                     configURL = applistConfig.uploadUrl;
                 } else {
