@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import cn.com.mma.mobile.tracking.util.klog.KLog;
 import cn.com.mma.mobile.tracking.viewability.origin.ViewAbilityStats;
 
@@ -159,12 +158,10 @@ public class ViewFrameBlock implements Serializable {
         List<HashMap<String, Object>> arrs = new ArrayList<>();
         try {
             int len = framesList.size();
-            ViewFrameSlice endSlice = framesList.get(len - 1);
-            if (endSlice != null && !endSlice.equals(lastSlice)) {
-                KLog.w("将lastSlice装入帧序列末尾");
-                framesList.add(lastSlice);
+            if (len > 0) {
+                ViewFrameSlice endSlice = framesList.get(len - 1);
+                if (!endSlice.equals(lastSlice)) framesList.add(lastSlice);
             }
-
             int maxLen = framesList.size();
             int startIndex = 0;
             //如果采集点长度大于max,则取采集点最后max长度的内容组装

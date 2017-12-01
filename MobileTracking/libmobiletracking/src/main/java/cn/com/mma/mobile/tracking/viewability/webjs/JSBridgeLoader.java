@@ -24,7 +24,7 @@ import cn.com.mma.mobile.tracking.util.DeviceInfoUtil;
 import cn.com.mma.mobile.tracking.util.Logger;
 
 /**
- * Created by yangxiaolong on 17/7/28.
+ * Created by MMAChinaSDK on 17/7/28.
  */
 public class JSBridgeLoader {
 
@@ -63,7 +63,7 @@ public class JSBridgeLoader {
 
                 //KLog.v("sp bridgeJS:" + bridgeJs);
                 //如果不存在js缓存,尝试从本地XML内获取
-                if (TextUtils.isEmpty(bridgeJs)) {
+                if (TextUtils.isEmpty(bridgeJs) && !TextUtils.isEmpty(jsName)) {
                     bridgeJs = getJsFromAssets();
                     //KLog.v("Assets bridgeJS:" + bridgeJs);
                 }
@@ -102,21 +102,21 @@ public class JSBridgeLoader {
     public void doUpdate() {
 
         if (!isUpdating) {
+
+            //下载地址为NULL
+            if (TextUtils.isEmpty(jsURL)) {
+                Logger.w("<jsurl> is empty,online updates are unavailable.");
+                return;
+            }
+
+            //网络不好
+            if (!DeviceInfoUtil.isNetworkAvailable(context)) {
+                return;
+            }
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-
-                    //网络不好
-                    if (!DeviceInfoUtil.isNetworkAvailable(context)) {
-                        Logger.w("Network unavailable.");
-                        return;
-                    }
-
-                    //下载地址为NULL
-                    if (TextUtils.isEmpty(jsURL)) {
-                        Logger.w(jsName + " <jsurl> is Empty,Online updates are unavailable.");
-                        return;
-                    }
 
                     isUpdating = true;
 
