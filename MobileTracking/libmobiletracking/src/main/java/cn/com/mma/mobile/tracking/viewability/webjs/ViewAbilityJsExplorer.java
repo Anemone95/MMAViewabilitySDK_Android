@@ -111,9 +111,10 @@ public class ViewAbilityJsExplorer {
 
         String content = String.format("<!DOCTYPE html>\n<html>\n<head lang=\"en\">\n    <meta charset=\"UTF-8\">\n  <title></title>\n</head>\n<body style=\"margin:0;padding:0;\">\n  <div id=\"mian\" style=\"width:%dpx;height:%dpx;\">\n <script type=\"text/javascript\">%s</script>\n</div>\n</body>\n</html>", 1, 1, bridgeJs);
 
-        //KLog.d("loadURL:" + content);
+        //System.out.println(content);
         //mWebView.loadUrl(html);
-        mWebView.loadData(content, "text/html", null);
+        //mWebView.loadData(content, "text/html", null);
+        mWebView.loadDataWithBaseURL(null, content, "text/html", "utf-8", null);
 
     }
 

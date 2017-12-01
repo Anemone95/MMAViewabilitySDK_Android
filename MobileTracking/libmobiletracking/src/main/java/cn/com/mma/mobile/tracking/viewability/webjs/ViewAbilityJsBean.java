@@ -3,7 +3,6 @@ package cn.com.mma.mobile.tracking.viewability.webjs;
 import android.content.Context;
 import android.view.View;
 import org.json.JSONObject;
-
 import cn.com.mma.mobile.tracking.util.CommonUtil;
 
 /**
@@ -86,6 +85,6 @@ public class ViewAbilityJsBean {
 
     @Override
     public String toString() {
-        return "[" + adviewabilityId + ",URL: " + adURL + " ,isVideo:" + isVideo + ",isCompleted:" + isCompleted + ",view:" + adView + "]";
+        return "[" + adviewabilityId + ",URL: " + adURL + " ,isVideo:" + isVideo + ",isCompleted:" + isCompleted + "]";
     }
 }
