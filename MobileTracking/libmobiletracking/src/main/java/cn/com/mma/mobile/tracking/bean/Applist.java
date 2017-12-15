@@ -13,4 +13,9 @@ public class Applist {
      * 上报时间间隔
      */
     public int uploadTime;
+
+    /**
+     * 上报是否使用Gzip,缺省为true
+     */
+    public boolean useGzip = true;
 }

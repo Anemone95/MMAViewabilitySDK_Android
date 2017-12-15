@@ -60,7 +60,7 @@ public class AppListUploader {
      *
      * @param company
      */
-    private void checkIsNeedUpload(String adURL,Company company) {
+    private void checkIsNeedUpload(String adURL, final Company company) {
 
         Applist applistConfig = company.applist;
         if (applistConfig == null) return;
@@ -119,7 +119,7 @@ public class AppListUploader {
                             }
                             if (DeviceInfoUtil.isNetworkAvailable(mContext)) {
 
-                                byte[] response = ConnectUtil.getInstance().performPost(uploadURL, encodeData);
+                                byte[] response = ConnectUtil.getInstance().performPost(uploadURL, encodeData,company.applist.useGzip);
                                 if (response != null) {
                                     //update lastuploadtime
                                     SharedPreferencedUtil.putLong(mContext, SharedPreferencedUtil.SP_NAME_OTHER, spName, currentTime);

@@ -100,8 +100,12 @@ public class ViewFrameSlice implements Serializable {
 
             //覆盖率(被) 可视区域尺寸/视图原尺寸
             //float coverRate = 1.0f - (visbleWidth * visbleHeight) / (width * height);
-            double temp = 1.0f - (visbleWidth * visbleHeight) * 1.0f / (width * height) * 1.0f;
-            coverRate = (float) Math.round(temp * 100) / 100;
+            if (width * height == 0) {
+                coverRate = 1.0f;
+            } else {
+                double temp = 1.0f - (visbleWidth * visbleHeight) * 1.0f / (width * height) * 1.0f;
+                coverRate = (float) Math.round(temp * 100) / 100;
+            }
 
             //屏幕是否点亮
             screenOn = ViewHelper.isScreenOn(adView) ? 1 : 0;
