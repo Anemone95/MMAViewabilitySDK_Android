@@ -21,7 +21,7 @@ import android.text.TextUtils;
 import cn.com.mma.mobile.tracking.api.Constant;
 import cn.com.mma.mobile.tracking.bean.Argument;
 import cn.com.mma.mobile.tracking.bean.Company;
-import cn.mmachina.JniClient;
+import cn.mmachina.mobile.SignUtils;
 
 /**
  *
@@ -123,24 +123,35 @@ public class CommonUtil {
         return hostURL;
     }
 
-	/**
-	 * 获得签名
-	 * 
-	 * @param context
-	 * @param url
-	 * @return
-	 */
-	public static String getSignature(Context context, String url) {
-		// 检测URL转小写
-		try {
-			url.toLowerCase();
-			String signature = JniClient.MDString("", context, url);
-			return signature;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return url;
-		}
-	}
+//	/**
+//	 * 获得签名
+//	 *
+//	 * @param context
+//	 * @param url
+//	 * @return
+//	 */
+//	public static String getSignature(Context context, String url) {
+//		// 检测URL转小写
+//		try {
+//			url.toLowerCase();
+//			String signature = JniClient.MDString("", context, url);
+//			return signature;
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return url;
+//		}
+//	}
+
+    public static String getSignature(String sdkVersion, long timestamp, String originURL) {
+        // 检测URL转小写
+        try {
+            String signature = SignUtils.mmaSdkSign(sdkVersion, timestamp, originURL);
+            return signature;
+        } catch (Exception e) {
+        }
+        return "";
+    }
+
 
 	/**
 	 * 对String 进行md5加密

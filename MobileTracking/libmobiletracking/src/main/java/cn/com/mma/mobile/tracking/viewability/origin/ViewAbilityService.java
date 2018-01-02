@@ -62,7 +62,7 @@ public class ViewAbilityService {
             bundle.putString(BUNDLE_EXPLORERID, explorerID);
             bundle.putSerializable(BUNDLE_VBRESULT, result);
             presenter.addViewAbilityMonitor(bundle, adView);
-            Logger.d("URL:" + adURL + " 开启View Ability 监测->");
+            //Logger.d("URL:" + adURL + " 开启View Ability 监测->");
         }
     }
 

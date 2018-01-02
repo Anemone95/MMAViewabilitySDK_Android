@@ -189,7 +189,7 @@ public class SdkConfigUpdateUtil {
 	 * 设置SDK
 	 */
 	private static void setSdk(SDK sdk) {
-		Logger.d("mma_setSdk");
+		//Logger.d("mma_setSdk");
 		if (sdk != null) {
 			try {
 				if(sdk.offlineCache!=null){
