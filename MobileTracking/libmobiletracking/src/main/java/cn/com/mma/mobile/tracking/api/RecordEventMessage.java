@@ -140,7 +140,8 @@ public class RecordEventMessage {
 
             //signature
             if (company.signature != null && company.signature.paramKey != null) {
-                String signStr = CommonUtil.getSignature(context, builder.toString());
+//                String signStr = CommonUtil.getSignature(context, builder.toString());
+                String signStr = CommonUtil.getSignature(Constant.TRACKING_SDKVS_VALUE, timestamp / 1000, builder.toString());
                 builder.append(separator);
                 builder.append(company.signature.paramKey);
                 builder.append(equalizer);

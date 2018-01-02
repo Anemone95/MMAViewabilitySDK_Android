@@ -11,6 +11,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.zip.GZIPOutputStream;
 import android.net.Uri;
 import android.text.TextUtils;
 import javax.net.ssl.HostnameVerifier;
@@ -165,7 +166,7 @@ public class ConnectUtil {
         return response;
     }
 
-    public byte[] performPost(String destURL, String data) {
+    public byte[] performPost(String destURL, String data,boolean useGzip) {
         //Logger.d("Attempting Post to " + destURL + "\n");
 
         byte[] response = null;
@@ -185,13 +186,23 @@ public class ConnectUtil {
             httpConnection.setDoInput(true);
             httpConnection.setRequestMethod("POST");
             httpConnection.setRequestProperty("Content-Type", "text/plain");
-            //httpConnection.setRequestProperty("Accept-Encoding", "");//gzip,deflate
+            //httpConnection.setRequestProperty("Accept-Encoding", "gzip,deflate");
+
+            if (useGzip) {
+                httpConnection.setRequestProperty("Content-Encoding", "gzip");
+            }
 
             os = httpConnection.getOutputStream();//upload
 
-            bos = new BufferedOutputStream(os);
-            bos.write(data.getBytes("UTF-8"));
-            bos.flush();
+            if (useGzip) {
+                byte[] buffer = eGzip(data.getBytes("UTF-8"));
+                os.write(buffer);
+                os.flush();
+            } else {
+                bos = new BufferedOutputStream(os);
+                bos.write(data.getBytes("UTF-8"));
+                bos.flush();
+            }
 
             int statusCode = httpConnection.getResponseCode();
 
@@ -247,6 +258,35 @@ public class ConnectUtil {
         buffer.flush();
         // buffer.close();
         return buffer.toByteArray();
+    }
+
+    /**
+     * 把byte 通过GZipStream封装
+     * @param content
+     * @return
+     */
+    private static byte[] eGzip(byte[] content) {
+        GZIPOutputStream gos = null;
+        try {
+            // 通过一个缓冲的byte[] 对标准输出流进行封装,不需要主动close
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            gos = new GZIPOutputStream(baos);
+            gos.write(content);
+            gos.finish();
+            gos.close();
+            gos = null;
+            return baos.toByteArray();
+        } catch (Exception e) {
+        } finally {
+            if (gos != null) {
+                try {
+                    gos.close();
+                } catch (IOException e) {
+                }
+                gos = null;
+            }
+        }
+        return null;
     }
 
 

@@ -131,6 +131,8 @@ public class XmlUtil {
                                 company.applist.uploadUrl = parser.nextText();
                             if ("uploadTime".equals(elementName))
                                 company.applist.uploadTime = Integer.parseInt(parser.nextText());
+                            if ("usegzip".equals(elementName))
+                                company.applist.useGzip = Boolean.parseBoolean(parser.nextText());
                         }
 						if ("config".equals(elementName))
 							company.config = new Config();
