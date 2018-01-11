@@ -3,7 +3,7 @@
 ####步骤1：添加  Android SDK 到工程中
 
 * 将  SDK 的 `mma_android_sdk.jar` 拷贝到 libs 目录下并添加为 JAR 包；
-* 将libNDKSignature.so 拷贝到 libs\armeabi 目录下；
+* 将libMMASignature.so 拷贝到 libs\armeabi 目录下；
 * 把sdkconfig.xml配置文件拷贝到工程里的assets目录下，同时将 sdkconfig.xml 上传到 web 服务器，使其可以通过 web 方式访问，假设其地址为 CONFIG_URL（其后会用到）。
 
 
@@ -193,9 +193,9 @@ public class MainActivity extends Activity {
 ```
 ####步骤4：验证和调试
 SDK 的测试有两个方面：
- 
- 1. 参数是否齐全，URL 拼接方式是否正确
- 2. 请求次数和第三方监测平台是否能对应上
+
+  1. 参数是否齐全，URL 拼接方式是否正确
+  2. 请求次数和第三方监测平台是否能对应上
 
 请联系第三方监测平台完成测试
 

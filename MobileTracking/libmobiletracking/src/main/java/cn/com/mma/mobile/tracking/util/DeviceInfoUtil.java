@@ -523,7 +523,6 @@ public class DeviceInfoUtil {
                 deviceInfoParams.put(Constant.TRACKING_NAME, getAppName(context));
                 deviceInfoParams.put(Constant.TRACKING_KEY, getPackageName(context));
                 deviceInfoParams.put(Constant.TRACKING_SCWH, getResolution(context));
-                deviceInfoParams.put(Constant.TRACKING_IMEI, getImei(context));
                 deviceInfoParams.put(Constant.TRACKING_OS, "0");
                 deviceInfoParams.put(Constant.TRACKING_SDKVS, Constant.TRACKING_SDKVS_VALUE);
                 deviceInfoParams.put(Constant.TRACKING_AAID, Reflection.getPlayAdId(context));
@@ -531,6 +530,7 @@ public class DeviceInfoUtil {
             }
         }
         //参数动态获取
+        deviceInfoParams.put(Constant.TRACKING_IMEI, getImei(context));
         String apMac = getWiFiBSSID(context).replace(":", "").toUpperCase();
         deviceInfoParams.put(Constant.TRACKING_WIFIBSSID, apMac);
         deviceInfoParams.put(Constant.TRACKING_WIFISSID, getWifiSSID(context));
