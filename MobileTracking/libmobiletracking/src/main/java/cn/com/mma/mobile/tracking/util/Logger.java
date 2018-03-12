@@ -36,4 +36,9 @@ public final class Logger {
         if (DEBUG_LOG)
             Log.w(TAG, msg);
     }
+
+    public static void i(String msg) {
+        if (DEBUG_LOG)
+            Log.i(TAG, msg);
+    }
 }

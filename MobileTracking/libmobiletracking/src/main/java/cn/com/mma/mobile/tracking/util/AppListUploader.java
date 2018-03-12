@@ -24,16 +24,23 @@ public class AppListUploader {
     private static AppListUploader mInstance = null;
     private static boolean isUploading;
     private static Context mContext;
+    private long lastUploadTime;
+
     private static final String JSON_MAC = "mac";
     private static final String JSON_IMEI = "imei";
     private static final String JSON_ANDROIDID = "androidid";
     private static final String JSON_TIME = "time";
     private static final String JSON_APPLIST = "applist";
+    private static final String JSON_SOURCE = "sdk";
+    private static final String JSON_SDKV = "sdkv";
+    private static final String JSON_BUNDLEID = "bundleid";
+    private static final String SOURCE_TYPE = "MMASDK";
 
 
 
     private AppListUploader(Context context) {
         mContext = context;
+        lastUploadTime = -1;
     }
 
     public static AppListUploader getInstance(Context context) {
@@ -70,13 +77,16 @@ public class AppListUploader {
             //上一次上报时间=company+identifier
             final String spName = company.domain.url + SharedPreferencedUtil.SP_OTHER_KEY_LASTUPLOADTIME_SUFFIX;
 
-            long lastuploadTime = SharedPreferencedUtil.getLong(mContext, SharedPreferencedUtil.SP_NAME_OTHER, spName);
+            if (lastUploadTime < 0) {
+                lastUploadTime = SharedPreferencedUtil.getLong(mContext, SharedPreferencedUtil.SP_NAME_OTHER, spName);
+            }
+
 
             long freq = applistConfig.uploadTime * 60 * 60;//转化成秒
 
             final long currentTime = System.currentTimeMillis() / 1000;
 
-            if (currentTime > (lastuploadTime + freq)) {
+            if (currentTime > (lastUploadTime + freq)) {
 
                 String configURL;
 
@@ -106,6 +116,10 @@ public class AppListUploader {
                             Map<String, String> deviceParams = DeviceInfoUtil.getDeviceInfo(mContext);
 
                             json.put(JSON_TIME, String.valueOf(System.currentTimeMillis()));
+                            json.put(JSON_SOURCE, SOURCE_TYPE);
+                            json.put(JSON_BUNDLEID, mContext.getPackageName());
+                            json.put(JSON_SDKV, Constant.TRACKING_SDKVS_VALUE);
+
                             json.put(JSON_MAC, CommonUtil.md5(deviceParams.get(Constant.TRACKING_MAC)));
                             json.put(JSON_IMEI, CommonUtil.md5(deviceParams.get(Constant.TRACKING_IMEI)));
                             json.put(JSON_ANDROIDID, CommonUtil.md5(deviceParams.get(Constant.TRACKING_ANDROIDID)));
@@ -122,11 +136,12 @@ public class AppListUploader {
                                 byte[] response = ConnectUtil.getInstance().performPost(uploadURL, encodeData,company.applist.useGzip);
                                 if (response != null) {
                                     //update lastuploadtime
+                                    lastUploadTime = currentTime;
                                     SharedPreferencedUtil.putLong(mContext, SharedPreferencedUtil.SP_NAME_OTHER, spName, currentTime);
                                 }
                             }
 
-                        } catch (JSONException e) {
+                        } catch (Exception e) {
                         } finally {
                             isUploading = false;
                         }

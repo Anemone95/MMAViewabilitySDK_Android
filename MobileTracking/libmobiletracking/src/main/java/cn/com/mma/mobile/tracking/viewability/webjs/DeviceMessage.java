@@ -43,9 +43,9 @@ public class DeviceMessage {
 
                 deviceMessage.put(JSON_MAC, CommonUtil.md5(mac));
 
-                deviceMessage.put(JSON_IMEI, DeviceInfoUtil.getImei(context));
+                deviceMessage.put(JSON_IMEI, CommonUtil.md5(DeviceInfoUtil.getImei(context)));
 
-                deviceMessage.put(JSON_ANDROIDID, DeviceInfoUtil.getAndroidId(context));
+                deviceMessage.put(JSON_ANDROIDID, CommonUtil.md5(DeviceInfoUtil.getAndroidId(context)));
 
                 deviceMessage.put(JSON_AKEY, DeviceInfoUtil.getPackageName(context));//AKEY=packagename
                 deviceMessage.put(JSON_ANAME, DeviceInfoUtil.getAppName(context));//ANAME=appname

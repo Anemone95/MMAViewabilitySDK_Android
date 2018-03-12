@@ -20,7 +20,7 @@ public class ViewAbilityJsService {
 
 
     private Context mContext;
-    private SDK mSdkConfig;
+    //private SDK mSdkConfig;
     private ScheduledExecutorService scheduledExecutorService = null;
     private boolean isTaskStarted = false;
 
@@ -28,9 +28,9 @@ public class ViewAbilityJsService {
     private HashMap<String, ViewAbilityJsExplorer> viewabilityWorkers;
     private static final int monitorInterval = 200;
 
-    public ViewAbilityJsService(Context context, SDK sdk) {
+    public ViewAbilityJsService(Context context) {
         mContext = context;
-        mSdkConfig = sdk;
+        //mSdkConfig = sdk;
         //KLog.init(true, "ViewAbilityJS");
         viewabilityWorkers = new HashMap<>();
         scheduledExecutorService = Executors.newScheduledThreadPool(1);

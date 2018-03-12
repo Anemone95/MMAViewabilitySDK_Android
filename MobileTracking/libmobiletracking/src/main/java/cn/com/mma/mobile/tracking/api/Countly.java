@@ -5,7 +5,9 @@ import android.content.SharedPreferences;
 import android.view.View;
 import java.util.Timer;
 import java.util.TimerTask;
+import cn.com.mma.mobile.tracking.bean.Company;
 import cn.com.mma.mobile.tracking.bean.SDK;
+import cn.com.mma.mobile.tracking.util.LocationCollector;
 import cn.com.mma.mobile.tracking.util.Logger;
 import cn.com.mma.mobile.tracking.util.SdkConfigUpdateUtil;
 import cn.com.mma.mobile.tracking.util.SharedPreferencedUtil;
@@ -29,6 +31,7 @@ public class Countly {
     private volatile boolean sIsInitialized = false;
     private Context mContext;
     private RecordEventMessage mUrildBuilder;
+    private boolean isTrackLocation = false;
 
     private static final String EVENT_CLICK = "onClick";
     private static final String EVENT_EXPOSE = "onExpose";
@@ -82,24 +85,56 @@ public class Countly {
             sIsInitialized = true;
         }
 
-        try {
-            Context appContext = context.getApplicationContext();
-            mContext = appContext;
-            normalTimer = new Timer();
-            failedTimer = new Timer();
-            mUrildBuilder = RecordEventMessage.getInstance(context);
+        Context appContext = context.getApplicationContext();
+        mContext = appContext;
+        normalTimer = new Timer();
+        failedTimer = new Timer();
+        mUrildBuilder = RecordEventMessage.getInstance(context);
 
-            SdkConfigUpdateUtil.initSdkConfigResult(context, configURL);
-            SDK sdk = SdkConfigUpdateUtil.getSdk(context);
+        try {
+            //获取配置
+            SDK sdk = SdkConfigUpdateUtil.getSDKConfig(context);
 
             //初始化可视化监测模块,传入SDK配置文件
             viewAbilityHandler = new ViewAbilityHandler(mContext, viewAbilityEventListener, sdk);
 
-            startTask();
+            //Location Service
+            if (isTrackLocation(sdk)) {
+                isTrackLocation = true;
+                LocationCollector.getInstance(mContext).syncLocation();
+            }
+
+            //监测配置更新
+            SdkConfigUpdateUtil.sync(context, configURL);
 
         } catch (Exception e) {
-            Logger.e("Countly init failed");
+            Logger.e("Countly init failed:" + e.getMessage());
         }
+
+        //开启定时器
+        startTask();
+    }
+
+    /**
+     * 检测是否有开启Location的配置项
+     * 规则:只要有任一Company有开启Location,则返回TRUE
+     * @param sdkConfig
+     * @return
+     */
+
+    private boolean isTrackLocation(SDK sdkConfig) {
+        try {
+            if (sdkConfig != null && sdkConfig.companies != null) {
+                for (Company company : sdkConfig.companies) {
+                    //广告监测HOST要和配置文件的公司域名相符
+                    if (company.sswitch != null && company.sswitch.isTrackLocation) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        return false;
     }
 
 
@@ -183,10 +218,11 @@ public class Countly {
                 normalTimer.cancel();
                 normalTimer.purge();
             }
-            if (failedTimer == null) {
+            if (failedTimer != null) {
                 failedTimer.cancel();
                 failedTimer.purge();
             }
+            if (isTrackLocation) LocationCollector.getInstance(mContext).stopSyncLocation();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -198,6 +234,8 @@ public class Countly {
 
             if (viewAbilityHandler != null) viewAbilityHandler = null;
 
+            sIsInitialized = false;
+            mInstance = null;
         }
     }
 
@@ -211,8 +249,9 @@ public class Countly {
 
     private  void triggerEvent(String eventName, String adURL, View adView, int videoPlayType) {
 
+
         if (sIsInitialized == false || mUrildBuilder == null) {
-            Logger.e("The static method " + eventName + "(...) should be called before calling Countly.init(...)");
+            Logger.e("The method " + eventName + "(...) should be called before calling Countly.init(...)");
             return;
         }
 
@@ -241,7 +280,7 @@ public class Countly {
                 public void run() {
                     startNormalRun();
                 }
-            }, 0, Constant.ONLINECACHE_QUEUEEXPIRATIONSECS);
+            }, 0, Constant.ONLINECACHE_QUEUEEXPIRATIONSECS * 1000);
 
             failedTimer.schedule(new TimerTask() {
                 public void run() {

@@ -8,7 +8,6 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import org.json.JSONObject;
-
 import cn.com.mma.mobile.tracking.viewability.common.ViewHelper;
 
 /**
@@ -26,6 +25,7 @@ public class ViewAbilityMessage {
     private static final String ADVIEWABILITY_SHOWFRAME = "AdviewabilityShowFrame";
     private static final String ADVIEWABILITY_LIGHT = "AdviewabilityLight";
     public static final String ADVIEWABILITY_TYPE = "AdviewabilityType";
+    private static final String ADVIEWABILITY_FORGROUND = "AdviewabilityForground";
 
 
     public static JSONObject getViewAbilityEvents(Context context, View adView) {
@@ -76,14 +76,21 @@ public class ViewAbilityMessage {
             visibleSize = visbleWidth + "x" + visbleHeight;
 
             //覆盖率(被) 可视区域尺寸/视图原尺寸
-            double temp = 1.0f - (visbleWidth * visbleHeight) * 1.0f / (width * height) * 1.0f;
-            coverRate = (float) Math.round(temp * 100) / 100;
+            if (width * height == 0) {
+                coverRate = 1.0f;
+            } else {
+                double temp = 1.0f - (visbleWidth * visbleHeight) * 1.0f / (width * height) * 1.0f;
+                coverRate = (float) Math.round(temp * 100) / 100;
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         int screenOn = ViewHelper.isScreenOn(adView) ? 1 : 0;
+
+        //是否前台运行  0=后台或遮挡 1=前台
+       int isForground = adView.hasWindowFocus() ? 1 : 0;
 
         try {
             jsonObject.put(ADVIEWABILITY_TIME, String.valueOf(System.currentTimeMillis()));
@@ -94,6 +101,7 @@ public class ViewAbilityMessage {
             jsonObject.put(ADVIEWABILITY_SHOWFRAME, visibleSize);
             jsonObject.put(ADVIEWABILITY_COVERRATE, String.valueOf(coverRate));
             jsonObject.put(ADVIEWABILITY_LIGHT, String.valueOf(screenOn));
+            jsonObject.put(ADVIEWABILITY_FORGROUND, String.valueOf(isForground));
         } catch (Exception e) {
             e.printStackTrace();
         }
