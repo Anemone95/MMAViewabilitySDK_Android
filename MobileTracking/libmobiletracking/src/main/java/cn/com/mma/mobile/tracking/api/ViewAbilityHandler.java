@@ -57,15 +57,15 @@ public class ViewAbilityHandler {
         this.mmaSdkCallback = mmaSdkCallback;
         impressions = new HashMap<>();
         sdkConfig = sdk;
-
-        if (sdkConfig == null) sdkConfig = SdkConfigUpdateUtil.getSdk(context);
-
         abilityConfig = initViewAbilityGlobalConfig();
         viewAbilityService = new ViewAbilityService(context, mmaSdkCallback, abilityConfig);
-
-        viewAbilityJsService = new ViewAbilityJsService(context, sdkConfig);
+        viewAbilityJsService = new ViewAbilityJsService(context);
     }
 
+    /**
+     * 初始化可视化配置,网络动态更新,需要下次启动时生效
+     * @return
+     */
     private ViewAbilityConfig initViewAbilityGlobalConfig() {
 
         ViewAbilityConfig config = new ViewAbilityConfig();
@@ -454,6 +454,8 @@ public class ViewAbilityHandler {
                     return company;
                 }
             }
+        } else {//如果配置缺失,重新获取
+            sdkConfig = SdkConfigUpdateUtil.getSDKConfig(context);
         }
 
         return null;
@@ -544,6 +546,9 @@ public class ViewAbilityHandler {
             String showCoverRate = "";
             String exposeDuration = "";
             String filterURL = adURL;
+
+            //如果缺失viewabilityargument配置项,直接返回
+            if (arguments == null) return filterURL;
 
             //去掉viewabilityarguments中的参数
             for (String argumentKey : arguments.keySet()) {

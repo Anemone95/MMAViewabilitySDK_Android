@@ -1,14 +1,13 @@
 package cn.com.mma.mobile.tracking.api;
 
-import java.net.HttpURLConnection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 
+import cn.com.mma.mobile.tracking.util.CommonUtil;
 import cn.com.mma.mobile.tracking.util.ConnectUtil;
 import cn.com.mma.mobile.tracking.util.DeviceInfoUtil;
 import cn.com.mma.mobile.tracking.util.Logger;
@@ -75,6 +74,7 @@ public class SendMessageThread extends Thread {
                                 handleFailedResult(eventData, eventExpireTime);
                                 return;
                             } else {
+                                Logger.i("record [" + CommonUtil.md5(eventData) + "] upload succeed.");
                                 handleSuccessResult(spName, eventData);
                                 //[LOCALTEST] 测试计数:记录发送成功
                                 if (Countly.LOCAL_TEST) {
@@ -117,7 +117,7 @@ public class SendMessageThread extends Thread {
                 boolean result = SharedPreferencedUtil
                         .removeFromSharedPreferences(context,
                                 SharedPreferencedUtil.SP_NAME_OTHER, key);
-                Logger.d("mma_failed发送失败超过三次，删除other中记录" + result);
+                //Logger.d("Failure more than three times, and delete records:" + key);
             } else {
                 SharedPreferencedUtil.putLong(context,
                         SharedPreferencedUtil.SP_NAME_OTHER, key, failedTime);
@@ -138,7 +138,7 @@ public class SendMessageThread extends Thread {
             // 删除错误日志中的失败次数
             boolean result = SharedPreferencedUtil.removeFromSharedPreferences(
                     context, SharedPreferencedUtil.SP_NAME_OTHER, key);
-            Logger.d("mma_failed数据发送成功，删除other中记录" + result);
+            //Logger.d("mma_failed数据发送成功，删除other中记录" + result);
         }
 
         requestList.remove(key);

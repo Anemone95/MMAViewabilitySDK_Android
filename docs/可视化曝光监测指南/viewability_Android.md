@@ -22,7 +22,6 @@
 <uses-permission android:name="android.permission.INTERNET" /> 
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> 
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> 
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> 
 <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
 ```
@@ -150,7 +149,42 @@ public class MainActivity extends Activity {
 ####步骤4：验证和调试
 SDK 的测试有两个方面：
 
-  1. 参数是否齐全，URL 拼接方式是否正确
-  2. 请求次数和第三方监测平台是否能对应上
+    1. 参数是否齐全，URL 拼接方式是否正确
+    2. 请求次数和第三方监测平台是否能对应上
 
-请联系第三方监测平台完成测试
+请联系第三方监测平台完成测试。
+
+
+
+### 位置信息获取配置
+
+想要获取位置信息，需要如下两步：
+
+- 在AndroidManifest.xml 文件添加相关权限：
+
+```
+ <!-- 如果获取位置信息，需要声明以下权限 -->
+ <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+ <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+```
+
+- 监测代码对应的sdkconfig内Company标签的<isTrackLocation>项设置为**true**。
+
+  ​
+
+如果不想开启定位服务，需要**sdkconfig内将所有Company标签内的<isTrackLocation>设置为false**。
+
+### 混淆配置
+
+如果APP使用了混淆技术，以防SDK被混淆报错，需要在混淆配置里添加如下代码：
+
+```
+# SDK开源，集成的Library(Jar)本身无混淆，二次混淆与否不影响
+#-keep class cn.com.mma.** { *; }
+#-keep class cn.mmachina.**{*;}
+#-dontwarn cn.com.mma.**
+#-dontwarn cn.mmachina.**
+# SDK用到了v4包里的API，请确保v4相关support包不被混淆
+#-keep class android.support.v4.** { *; }
+#-dontwarn android.support.v4.**
+```

@@ -13,6 +13,7 @@ import cn.com.mma.mobile.tracking.bean.SDK;
 import cn.com.mma.mobile.tracking.util.AppListUploader;
 import cn.com.mma.mobile.tracking.util.CommonUtil;
 import cn.com.mma.mobile.tracking.util.DeviceInfoUtil;
+import cn.com.mma.mobile.tracking.util.LocationCollector;
 import cn.com.mma.mobile.tracking.util.Logger;
 import cn.com.mma.mobile.tracking.util.SdkConfigUpdateUtil;
 import cn.com.mma.mobile.tracking.util.SharedPreferencedUtil;
@@ -50,9 +51,9 @@ public class RecordEventMessage {
         long timestamp = System.currentTimeMillis();
         Company company = null;
 
-        SDK sdk = SdkConfigUpdateUtil.getSdk(context);
+        SDK sdk = SdkConfigUpdateUtil.getSDKConfig(context);
         if (sdk == null || sdk.companies == null) {
-            Logger.w("没有检测到监测配置,本次事件无法监测!");
+            Logger.e("没有读取到监测配置文件,当前事件无法监测!");
             return;
         }
 
@@ -130,7 +131,12 @@ public class RecordEventMessage {
                     builder.append(argumentValue);
                     builder.append(equalizer);
                     builder.append(CommonUtil.md5(deviceInfoParams.get(argumentKey)));
-                }else {
+                }else if(argumentKey.equals(Constant.TRACKING_LOCATION) && company.sswitch.isTrackLocation) {
+                    builder.append(separator);
+                    builder.append(argumentValue);
+                    builder.append(equalizer);
+                    builder.append(LocationCollector.getInstance(context).getLocation());
+                } else {
                     builder.append(separator);
                     builder.append(argumentValue);
                     builder.append(equalizer);
