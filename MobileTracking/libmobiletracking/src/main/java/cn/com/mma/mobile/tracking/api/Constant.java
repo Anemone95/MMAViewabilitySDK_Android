@@ -48,7 +48,7 @@ public class Constant {
 	public static final String REDIRECTURL = "REDIRECTURL";
 
 	public static final String TRACKING_SDKVS = "SDKVS";
-	public static final String TRACKING_SDKVS_VALUE = "V2.0.0";
+	public static final String TRACKING_SDKVS_VALUE = "V2.0.1";
 
 	/**
 	 * 新版常量 Begin
