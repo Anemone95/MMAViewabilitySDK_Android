@@ -175,7 +175,8 @@ public class ViewAbilityStats implements Serializable {
             String configThresholdArgument = get(ViewAbilityStats.ADVIEWABILITY_CONFIG_THRESHOLD);
             if (!TextUtils.isEmpty(configThresholdArgument)) {
                 String exposeDuration = getValueFromURL(configThresholdArgument, originURL);
-                this.urlExposeDuration = Integer.valueOf(exposeDuration) * 1000;
+                if (!TextUtils.isEmpty(exposeDuration))
+                    this.urlExposeDuration = Integer.valueOf(exposeDuration) * 1000;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -191,9 +192,11 @@ public class ViewAbilityStats implements Serializable {
             String configAreaArgument = get(ViewAbilityStats.ADVIEWABILITY_CONFIG_AREA);
             if (!TextUtils.isEmpty(configAreaArgument)) {
                 String showCoverRateStr = getValueFromURL(configAreaArgument, originURL);
-                float showCoverRate = Integer.valueOf(showCoverRateStr) / 100.0f;
-                if (showCoverRate > 0.0f && showCoverRate < 1.0f)
-                    this.urlShowCoverRate = showCoverRate;
+                if (!TextUtils.isEmpty(showCoverRateStr)) {
+                    float showCoverRate = Integer.valueOf(showCoverRateStr) / 100.0f;
+                    if (showCoverRate > 0.0f && showCoverRate < 1.0f)
+                        this.urlShowCoverRate = showCoverRate;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -209,8 +212,10 @@ public class ViewAbilityStats implements Serializable {
             String videoDurationArgument = get(ViewAbilityStats.ADVIEWABILITY_VIDEO_DURATION);
             if (!TextUtils.isEmpty(videoDurationArgument)) {
                 String videoDurationStr = getValueFromURL(videoDurationArgument, originURL);
-                int videoDuration = Integer.valueOf(videoDurationStr) * 1000;
-                this.urlVideoDuration = videoDuration;
+                if (!TextUtils.isEmpty(videoDurationStr)) {
+                    int videoDuration = Integer.valueOf(videoDurationStr) * 1000;
+                    this.urlVideoDuration = videoDuration;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

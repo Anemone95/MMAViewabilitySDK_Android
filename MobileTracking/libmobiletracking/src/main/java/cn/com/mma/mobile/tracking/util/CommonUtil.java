@@ -145,6 +145,7 @@ public class CommonUtil {
     public static String getSignature(String sdkVersion, long timestamp, String originURL) {
         // 检测URL转小写
         try {
+            //System.out.println("getSignature:" + sdkVersion + " timestamp:" + timestamp + "  originURL:" + originURL);
             String signature = SignUtils.mmaSdkSign(sdkVersion, timestamp, originURL);
             return signature;
         } catch (Exception e) {
