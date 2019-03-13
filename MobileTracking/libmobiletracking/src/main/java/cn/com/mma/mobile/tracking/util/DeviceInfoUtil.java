@@ -531,6 +531,7 @@ public class DeviceInfoUtil {
         }
         //参数动态获取
         deviceInfoParams.put(Constant.TRACKING_IMEI, getImei(context));
+        deviceInfoParams.put(Constant.TRACKING_RAWIMEI, getImei(context));
         String apMac = getWiFiBSSID(context).replace(":", "").toUpperCase();
         deviceInfoParams.put(Constant.TRACKING_WIFIBSSID, apMac);
         deviceInfoParams.put(Constant.TRACKING_WIFISSID, getWifiSSID(context));

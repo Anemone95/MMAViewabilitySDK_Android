@@ -41,6 +41,7 @@ public class Constant {
 	public static final String TRACKING_WIFISSID = "WIFISSID";
 	public static final String TRACKING_WIFIBSSID = "WIFIBSSID";
 	public static final String TRACKING_IMEI = "IMEI";
+	public static final String TRACKING_RAWIMEI = "RAWIMEI";
 	public static final String TRACKING_ODIN = "ODIN";
 	public static final String TRACKING_MUID = "MUID";
 	public static final String TRACKING_MUDS = "MUDS";
@@ -48,7 +49,7 @@ public class Constant {
 	public static final String REDIRECTURL = "REDIRECTURL";
 
 	public static final String TRACKING_SDKVS = "SDKVS";
-	public static final String TRACKING_SDKVS_VALUE = "V2.0.2";
+	public static final String TRACKING_SDKVS_VALUE = "V2.0.3";
 
 	/**
 	 * 新版常量 Begin
