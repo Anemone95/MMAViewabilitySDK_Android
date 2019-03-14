@@ -2,6 +2,7 @@ package cn.com.mma.mobile.tracking.api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.view.View;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -254,7 +255,10 @@ public class Countly {
             Logger.e("The method " + eventName + "(...) should be called before calling Countly.init(...)");
             return;
         }
-
+        if (TextUtils.isEmpty(adURL)) {
+            Logger.w("The URL parameter is illegal, it can't be null or empty!");
+            return;
+        }
         switch (eventName) {
             case EVENT_CLICK:
                 viewAbilityHandler.onClick(adURL);

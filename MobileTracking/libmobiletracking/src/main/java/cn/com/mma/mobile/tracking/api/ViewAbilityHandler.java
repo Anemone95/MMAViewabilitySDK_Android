@@ -439,7 +439,9 @@ public class ViewAbilityHandler {
 
 
     /**
-     * 获取监测
+     * 获取监测代码对应的监测公司配置对象
+     * 注意：严格校验模式：如果输入的一个 http://g.cn.miaozhen.ks 类似这样的监测链接，在获取对应监测公司配置对象（.miaozhen.com）时，
+     * 会因为找不到匹配的HOST（http://g.cn.miaozhen.ks）而返回NULL，该次监测无法完成，没有数据包上报。
      *
      * @param adURL
      * @return

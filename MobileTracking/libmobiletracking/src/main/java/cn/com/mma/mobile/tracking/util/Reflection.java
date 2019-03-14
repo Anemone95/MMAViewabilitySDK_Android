@@ -24,8 +24,8 @@ public class Reflection {
 
     public static String getPlayAdId(Context context) {
 
-        boolean isGooglePlayServicesAvailable = isGooglePlayServicesAvailable(context);
-        if (!isGooglePlayServicesAvailable) Logger.w("googlePlay service is unavailable!");
+//        boolean isGooglePlayServicesAvailable = isGooglePlayServicesAvailable(context);
+//        if (!isGooglePlayServicesAvailable) Logger.w("googlePlay service is unavailable!");
 
         String playAdid = null;
         try {

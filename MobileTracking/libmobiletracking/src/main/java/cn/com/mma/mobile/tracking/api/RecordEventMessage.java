@@ -57,8 +57,9 @@ public class RecordEventMessage {
             return;
         }
 
+        String host = "";
         try {
-            String host = CommonUtil.getHostURL(adURL);
+            host= CommonUtil.getHostURL(adURL);
             for (Company companyItem : sdk.companies) {
                 if (host.endsWith(companyItem.domain.url)) {
                     company = companyItem;
@@ -146,12 +147,19 @@ public class RecordEventMessage {
 
             //signature
             if (company.signature != null && company.signature.paramKey != null) {
-//                String signStr = CommonUtil.getSignature(context, builder.toString());
-                String signStr = CommonUtil.getSignature(Constant.TRACKING_SDKVS_VALUE, timestamp / 1000, builder.toString());
-                builder.append(separator);
-                builder.append(company.signature.paramKey);
-                builder.append(equalizer);
-                builder.append(CommonUtil.encodingUTF8(signStr));
+                //String signStr = CommonUtil.getSignature(context, builder.toString());
+                //传入的监测代码host之后如果缺失分隔符/,会导致签名时Native处切割host时引起Crash，需要在传入的监测链接时判断或Native层修复
+                String checkURL = filteredURL.replace(host, "");
+                if (checkURL.contains("/")) {
+                    String signStr = CommonUtil.getSignature(Constant.TRACKING_SDKVS_VALUE, timestamp / 1000, builder.toString());
+                    builder.append(separator);
+                    builder.append(company.signature.paramKey);
+                    builder.append(equalizer);
+                    builder.append(CommonUtil.encodingUTF8(signStr));
+                } else {
+                    Logger.w("The monitor URL format is illegal,signature verification failed!");
+                }
+
             }
 
             //redirectURL

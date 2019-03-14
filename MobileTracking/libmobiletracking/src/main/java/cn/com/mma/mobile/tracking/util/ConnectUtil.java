@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.zip.GZIPOutputStream;
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.text.TextUtils;
 import javax.net.ssl.HostnameVerifier;
@@ -295,9 +296,11 @@ public class ConnectUtil {
             return null;
         }
 
+        @SuppressLint("TrustAllX509TrustManager")
         public void checkClientTrusted(X509Certificate[] certs, String authType) {
         }
 
+        @SuppressLint("TrustAllX509TrustManager")
         public void checkServerTrusted(X509Certificate[] certs, String authType) {
 
         }
@@ -307,6 +310,7 @@ public class ConnectUtil {
         public NullHostNameVerifier() {
         }
 
+        @SuppressLint("BadHostnameVerifier")
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
